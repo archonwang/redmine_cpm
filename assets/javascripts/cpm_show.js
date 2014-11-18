@@ -217,11 +217,16 @@ function clear_disabled_filters(){
 // Generate and show modal window for user capacity edition
 function edit_capacities(id,from_date,to_date,projects){
 	html = "";
+	if ($('input[name="ignore_black_lists"]').is(':checked')){
+		ignore_blacklists_value = 'on';
+	} else {
+		ignore_blacklists_value = '';
+	}
 
 	$.ajax({
 		url: '/cpm_management/edit_form/'+id,
 		async: false,
-		data: {projects: projects, from_date: from_date, to_date: to_date, ignore_blacklists: $('input[name="ignore_blacklists"]').serialize()},
+		data: {projects: projects, from_date: from_date, to_date: to_date, ignore_black_lists: ignore_blacklists_value},
 		type: 'POST',
 		success: function(filter){
 			html = filter;

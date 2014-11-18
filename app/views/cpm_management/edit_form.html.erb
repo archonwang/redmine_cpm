@@ -7,7 +7,7 @@
 
 	<div id="new_assignment" class="assignment_form">
 	<h3>Nueva asignación</h3>
-	<%= form_for @cpm_user_capacity, remote: true, url: {controller: "cpm_user_capacity", action: "new_by_modal", start_date: params[:from_date], due_date: params[:to_date], projects:params[:projects]} do |f| %>
+	<%= form_for @cpm_user_capacity, remote: true, url: {controller: "cpm_user_capacity", action: "new_by_modal", start_date: params[:from_date], due_date: params[:to_date], projects:params[:projects], ignore_black_lists:params[:ignore_black_lists]} do |f| %>
 		<%= f.hidden_field :user_id %>
 		<div>
 			<span>

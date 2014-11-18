@@ -19,8 +19,11 @@
 					<%= link_to user.login, controller: 'users', action: 'edit', id: user.id %>
 				</td>
 				<% @time_unit_num.times do |i| %>
-					<% capacity = user.get_capacity(@time_unit,i,@projects) %>
-					<td onclick="edit_capacities('<%=user.id%>','<%=get_from_date(@time_unit,i)%>','<%=get_to_date(@time_unit,i)%>',<%=@projects.to_json%>);" class="edit_user_capacities <%='alert' if capacity > 100 %> <%=@time_unit%> <%= 'weekend' if is_friday(@time_unit,i) %>" title="<%=user.get_tooltip(@time_unit,i,@projects)%>" value=<%=capacity%>>
+					<% 
+					capacity = @capacities[user.id][i]['value'].to_i
+					tooltip = @capacities[user.id][i]['tooltip']
+					%>
+					<td onclick="edit_capacities('<%=user.id%>','<%=get_from_date(@time_unit,i)%>','<%=get_to_date(@time_unit,i)%>',<%=@projects.to_json%>);" class="edit_user_capacities <%='alert' if capacity > 100 %> <%=@time_unit%> <%= 'weekend' if is_friday(@time_unit,i) %>" title="<%=tooltip%>" value=<%=capacity%>>
 						<%= capacity %>
 					</td>
 				<% end %>
@@ -31,7 +34,6 @@
 	</table>
 </div>
 <% end %>
-
 
 <div id="dialog">
 </div>

@@ -12,7 +12,8 @@ class CpmUserCapacityController < ApplicationController
                     user_id:@cpm_user_capacity.user_id, 
                     from_date:params[:start_date], 
                     to_date:params[:due_date], 
-                    projects:params[:projects]
+                    projects:params[:projects],
+                    ignore_black_lists:params[:ignore_black_lists]
   end
 
   # Add new capacity to an user for a project
@@ -44,7 +45,8 @@ class CpmUserCapacityController < ApplicationController
                 user_id:cpm.user_id, 
                 from_date:params[:start_date], 
                 to_date:params[:due_date], 
-                projects:params[:projects]
+                projects:params[:projects],
+                ignore_black_lists:params[:ignore_black_lists]
   end
 
   def delete
@@ -60,6 +62,7 @@ class CpmUserCapacityController < ApplicationController
                 user_id:cpm.user_id, 
                 from_date:params[:start_date], 
                 to_date:params[:due_date], 
-                projects:params[:projects]
+                projects:params[:projects],
+                ignore_black_lists:params[:ignore_black_lists]
   end
 end

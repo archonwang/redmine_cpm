@@ -1,6 +1,6 @@
 <% @cpm = capacity %>
 <div class="assignment_form">
-	<%= form_for @cpm, remote: true, url: {controller: "cpm_user_capacity", action: "edit", id: capacity.id, start_date: params[:from_date], due_date: params[:to_date], projects: params[:projects]} do |f| %>
+	<%= form_for @cpm, remote: true, url: {controller: "cpm_user_capacity", action: "edit", id: capacity.id, start_date: params[:from_date], due_date: params[:to_date], projects: params[:projects], ignore_black_lists: params[:ignore_black_lists]} do |f| %>
 		<div class='edit_row_content'>
 			<span>
 				<%= f.label :project_id, l(:"cpm.label_project") %>
