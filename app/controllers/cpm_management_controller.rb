@@ -101,40 +101,42 @@
     end
 
     # if @projects are empty, get all not ignored projects by default
-    #if @projects.empty?
+    if @projects.empty? and !params[:custom_field].present? and !params[:project_manager].present?
       #flash.now[:warning] = l(:'cpm.msg_projects_not_found')
-      #@projects = Project.where("id NOT IN (?)", ignored_projects).sort_by{|p| p.name}.collect{|p| p.id}
-    #end
-
-    # getting @users array
-    # add users specified by users filter
-    if params[:users].present?
-      @users += User.where("id IN (?)", params[:users])
+      @projects = Project.where("id NOT IN (?)", ignored_projects).sort_by{|p| p.name}.collect{|p| p.id}
     end
 
-    # add users specified by groups filter
-    if params[:groups].present?
-      @users += Group.where("id IN (?)", params[:groups]).collect{|g| g.users.reject{|u| ignored_users.include?((u.id).to_s)}}.flatten
-    end
+    if !@projects.empty?
+      # getting @users array
+      # add users specified by users filter
+      if params[:users].present?
+        @users += User.where("id IN (?)", params[:users])
+      end
 
-    # reorder and unify users
-    @users = @users.uniq.sort_by{|u| u.login}
+      # add users specified by groups filter
+      if params[:groups].present?
+        @users += Group.where("id IN (?)", params[:groups]).collect{|g| g.users.reject{|u| ignored_users.include?((u.id).to_s)}}.flatten
+      end
 
-    # if there are no users selected, get them based on projects selected
-    if !@projects.blank? and @users.blank?
-      projects = Project.where("id IN ("+@projects.join(',')+")")
+      # reorder and unify users
+      @users = @users.uniq.sort_by{|u| u.login}
 
-      # get users who are project members
-      members = projects.collect{|p| p.members.collect{|m| m.user_id}}.flatten
-      # get users who have time entries in projects
-      time_entries = projects.collect{|p| p.time_entries.collect{|te| te.user_id}}.flatten
+      # if there are no users selected, get them based on projects selected
+      if !@projects.blank? and @users.blank?
+        projects = Project.where("id IN ("+@projects.join(',')+")")
 
-      @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| ignored_users.include?((u.id).to_s)}.sort_by{|u| u.login}
-    # if there are no projects selected, get them based on users selected
-    elsif @projects.blank? and !@users.blank?
-      members = Project.joins(:memberships).where("members.user_id IN (?)",@users)
-      time_entries = Project.joins(:time_entries).where("time_entries.user_id IN (?)",@users)
-      @projects = Project.where("id IN (?)", (members+time_entries).uniq).reject{|p| ignored_projects.include?((p.id).to_s)}.sort_by{|p| p.name}.collect{|p| p.id}
+        # get users who are project members
+        members = projects.collect{|p| p.members.collect{|m| m.user_id}}.flatten
+        # get users who have time entries in projects
+        time_entries = projects.collect{|p| p.time_entries.collect{|te| te.user_id}}.flatten
+
+        @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| ignored_users.include?((u.id).to_s)}.sort_by{|u| u.login}
+      # if there are no projects selected, get them based on users selected
+      #elsif @projects.blank? and !@users.blank?
+        #members = Project.joins(:memberships).where("members.user_id IN (?)",@users)
+        #time_entries = Project.joins(:time_entries).where("time_entries.user_id IN (?)",@users)
+        #@projects = Project.where("id IN (?)", (members+time_entries).uniq).reject{|p| ignored_projects.include?((p.id).to_s)}.sort_by{|p| p.name}.collect{|p| p.id}
+      end
     end
 
     # set time_unit and time_unit_num default values
