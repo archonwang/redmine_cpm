@@ -3,8 +3,13 @@
 
   before_filter :authorize_global
   before_filter :set_menu_item
+  before_filter :oauth_authentication, :only => :show, :unless => :oauth_token?
 
   helper :cpm_management
+
+  def oauth_token?
+    !Setting.plugin_redmine_cpm[:google_calendar].present? or session[:oauth_token].present?
+  end
 
   # Main page for capacities search and management
   def show
@@ -44,6 +49,9 @@
 
   # Capacity search result
   def planning
+    if Setting.plugin_redmine_cpm[:google_calendar].present?
+      get_calendar
+    end
     # set black list arrays to empty if 'ignore_black_lists' filter is activated
     if !params['ignore_black_lists'].present?
       ignored_users = Setting.plugin_redmine_cpm['ignored_users'] || [0]
@@ -143,10 +151,26 @@
     @time_unit = params[:time_unit] || 'week'
     @time_unit_num = (params[:time_unit_num] || 12).to_i
 
+    if @calendar.present?
+      absence_project_id = Setting.plugin_redmine_cpm['absence_project']
+      if absence_project_id.present?
+        holidays = {}
+        @users.each do |user|
+          holidays[user.id] = []
+          if @calendar[user.login].present?
+            @calendar[user.login].each do |cpm|
+              holidays[user.id] << CpmUserCapacity.new(user_id: user.id, project_id: absence_project_id, capacity: 100, from_date: cpm[0], to_date: cpm[1])
+            end
+          end
+        end
+      end
+    end
+
     @capacities = {}
     @users.each do |user|
       @capacities[user.id] = @time_unit_num.times.collect{|i| {'value' => 0.0, 'tooltip' => ""}}
       capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?)',user.id, @projects)
+      capacities += holidays[user.id] if holidays.present?
 
       capacities.each do |capacity|
         @time_unit_num.times do |i|
@@ -330,6 +354,74 @@
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/ignore_black_lists', :layout => false )}
     end
   end
+  
+  def oauth_authentication
+    session[:params] = params
+    redirect_to oauth_client.auth_code.authorize_url(:redirect_uri => oauth_callback_url, :scope => scopes, :access_type => 'offline', :approval_prompt => 'force')
+  end
+
+  def oauth_callback
+    token = oauth_client.auth_code.get_token(params[:code], :redirect_uri => oauth_callback_url)
+    session[:oauth_token] = (token.to_hash).to_json
+
+    params = session[:params]
+
+    redirect_to :action => 'show', :params => params
+  end
+
+  def get_calendar  
+    #last_year = (Time.now.to_datetime-1.year).rfc3339
+    calendar = {}
+    calendar_id = Setting.plugin_redmine_cpm[:calendar_id]
+
+    if calendar_id.present?
+      result = oauth_token.get('https://www.googleapis.com/calendar/v3/calendars/'+calendar_id+'/events?fields=items(summary,start,end)&maxResults=2500')
+        
+      data = JSON.parse(result.body)
+
+      data['items'].each do |e|
+        pattern = /(.+) - / #/^([\w]+)/
+        matches = pattern.match(e['summary'])
+
+        if matches.present? and matches[1].present?
+          unless calendar[matches[1]].present?
+            calendar[matches[1]] = []
+          end
+          
+          calendar[matches[1]] << [e['start']['dateTime'].to_time+1.hour,e['end']['dateTime'].to_time+1.hour-1.day]
+        end
+      end
+    end
+
+    @calendar = calendar
+  end
+
+  def oauth_token
+    @token ||= OAuth2::AccessToken.from_hash(oauth_client, JSON.parse(session[:oauth_token]))
+
+    if !@token.present? or @token.expired?
+      @token = @token.refresh!
+      #session[:oauth_token] = @token.to_hash.to_json
+
+      #session.delete(:oauth_token)
+    end
+
+    @token
+  end
+
+  def oauth_client
+    @client ||= OAuth2::Client.new(Setting.plugin_redmine_cpm[:client_id], Setting.plugin_redmine_cpm[:client_secret],
+      :site => 'https://accounts.google.com',
+      :authorize_url => '/o/oauth2/auth',
+      :token_url => '/o/oauth2/token',
+      :access_type => 'offline',
+      :approval_prompt => 'force')
+  end
+
+  def scopes
+    'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.readonly'
+  end
+
 
   private
   def set_menu_item
