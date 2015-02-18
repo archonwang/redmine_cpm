@@ -1,3 +1,39 @@
-= redmine_cpm
+= Capacity Planning Manager (CPM)
 
-Description goes here
+CPM is a Redmine plugin to manage users' capacities among projects.
+
+== Features
+
+* Create user/project assignments with capacity percentage and start and due dates.
+* Show members' capacities assignments by project
+* Make and share assignments searches from customizable filters.
+* Show events registered in Google Calendar as assignments to any project of your choice.
+
+== Getting the plugin
+
+A copy of the plugin can be download from {GitHub}[https://github.com/Emergya/redmine_cpm].
+
+== Install
+
+1. Clone or download the plugin into Redmine plugins directory (make sure the name is redmine_cpm)
+    git clone git://github.com/Emergya/redmine_cpm redmine_cpm
+2. Install required gems
+    bundle install
+3. Execute migration
+    rake redmine:plugins:migrate RAILS_ENV=production
+4. Restart your Redmine
+
+== Uninstall
+
+1. Rollback the migration
+    rake redmine:plugins:migrate NAME=redmine_cpm VERSION=0 RAILS_ENV=production
+2. Remove redmine_cpm directory in Redmine
+    rm -rf redmine_cpm
+
+== Usage
+
+See the {wiki}[https://github.com/Emergya/redmine_cpm/wiki].
+
+== License
+
+This plugin is licensed under the GNU GPL v2. See LICENSE.txt for details.
