@@ -17,7 +17,7 @@ en:
     label_project_filters: "Project filters"
     title_roles: "Roles"
     label_project_manager_role: "Project manager"
-    title_custom_fields: "Campos personalizados"
+    title_custom_fields: "Custom fields"
     label_additional_info: Additional information
     title_google_calendar_connect: Google Calendar integration
     label_client_id: Client ID
@@ -49,6 +49,7 @@ en:
 
     label_hide_empty_users: "Hide empty users"
     label_bar_view: "Bar view"
+    label_sort_by_capacity: Sort by total capacity
 
     label_project_manager: "Project manager"
     label_time_unit: "Time unit"

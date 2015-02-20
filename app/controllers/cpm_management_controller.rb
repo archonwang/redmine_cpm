@@ -1,7 +1,7 @@
 ﻿class CpmManagementController < ApplicationController
   unloadable
 
-  before_filter :authorize_global
+  before_filter :authorize_global, :only => [:show]
   before_filter :set_menu_item
   before_filter :oauth_authentication, :only => :show, :unless => :oauth_token?
 
@@ -370,27 +370,31 @@
   end
 
   def get_calendar  
-    #last_year = (Time.now.to_datetime-1.year).rfc3339
-    calendar = {}
-    calendar_id = Setting.plugin_redmine_cpm[:calendar_id]
+    begin
+      calendar = {}
 
-    if calendar_id.present?
-      result = oauth_token.get('https://www.googleapis.com/calendar/v3/calendars/'+calendar_id+'/events?fields=items(summary,start,end)&maxResults=2500')
-        
-      data = JSON.parse(result.body)
+      calendar_id = Setting.plugin_redmine_cpm[:calendar_id]
 
-      data['items'].each do |e|
-        pattern = /(.+) - / #/^([\w]+)/
-        matches = pattern.match(e['summary'])
+      if calendar_id.present?
+        result = oauth_token.get('https://www.googleapis.com/calendar/v3/calendars/'+calendar_id+'/events?fields=items(summary,start,end)&maxResults=2500')
 
-        if matches.present? and matches[1].present?
-          unless calendar[matches[1]].present?
-            calendar[matches[1]] = []
+        data = JSON.parse(result.body)
+
+        data['items'].each do |e|
+          pattern = /(.+) - / #/^([\w]+)/
+          matches = pattern.match(e['summary'])
+
+          if matches.present? and matches[1].present?
+            unless calendar[matches[1]].present?
+              calendar[matches[1]] = []
+            end
+            
+            calendar[matches[1]] << [e['start']['dateTime'].to_time+1.hour,e['end']['dateTime'].to_time+1.hour-1.day]
           end
-          
-          calendar[matches[1]] << [e['start']['dateTime'].to_time+1.hour,e['end']['dateTime'].to_time+1.hour-1.day]
         end
       end
+    rescue
+      calendar = {}
     end
 
     @calendar = calendar

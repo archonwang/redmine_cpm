@@ -49,6 +49,7 @@ es:
 
     label_hide_empty_users: "Ocultar usuarios vacios"
     label_bar_view: "Ver barras"
+    label_sort_by_capacity: Ordenar por capacidad total
 
     label_project_manager: "Jefes de proyecto"
     label_time_unit: "Unidad temporal"
