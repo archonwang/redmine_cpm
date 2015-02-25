@@ -54,6 +54,17 @@ $(document).ready(function(){
 		}
 	});
 
+	// Click on option "Sort by capacity"
+	$(document).on('change','#sort_by_capacity',function(){
+		if ($(this).is(':checked')){
+			sort_by_capacity();
+		} else {
+			sort_by_name();
+		}
+
+		strip_table("capacity_results");
+	});
+
 	// Update user capacity edition
 	$(document).on('ajax:success', '.edit_cpm_user_capacity', function(data, status, xhr){
 		$('#dialog').html(status);
@@ -142,9 +153,9 @@ function show_all_results(){
 
 // Añade alternativamente las clases odd y even a las filas de la tabla indicada
 function strip_table(table_id){
-	nxt = 'odd';
+	nxt = 'even';
 	$('#'+table_id+' tbody tr').each(function(i,tr){
-		if (i>0 && $(tr).is(':visible')){
+		if ($(tr).is(':visible')){
 			$(this).removeClass('even').removeClass('odd');
 			$(this).addClass(nxt);
 
@@ -189,6 +200,12 @@ function view_numbers(){
 
 // Apply actual visualization options to the result table
 function apply_options(){
+	if ($('#sort_by_capacity').is(':checked')){
+		sort_by_capacity();
+	} else {
+		sort_by_name();
+	}
+
 	if ($('#bar_view').is(':checked')){
 		view_bars();
 	} else {
@@ -235,6 +252,7 @@ function edit_capacities(id,from_date,to_date,projects){
 
 	$('#dialog').html(html);
 	//830
+	// When edit window is closed, enable remote submit (update only table) and submit form. After that, disable remote submit 
 	$('#dialog').dialog({width:1070, modal:true, close: function(){ 
 		$('.ui-dialog').remove();
 		enable_remote_submit('find_capacities', '/cpm_management/planning');
@@ -253,4 +271,71 @@ function disable_remote_submit(form_id, action){
 	$('#'+form_id).attr('action',action);
 	$('#'+form_id).removeAttr('data-remote');
 	$('#'+form_id).removeData("remote");
+}
+
+// Sort result table by total capacity assigned
+function sort_by_capacity(){
+	result = [];
+	$.each($('#capacity_results tr'),function(i,row){
+		if (i>0){
+			result[i-1] = {};
+			result[i-1]['row'] = $(this)[0].outerHTML; //.html();
+			result[i-1]['value'] = 0;
+			$.each($('td',row),function(j,col){
+				if (j>0){
+					result[i-1]['value'] += parseInt($(col).attr('value'));
+				}
+			});
+		}
+	});
+
+	console.log(result);
+	result = result.sort(sortFunctionDesc);
+	console.log(result);
+
+	$.each($('#capacity_results tr'),function(i,row){
+		if (i>0){
+			$(this).replaceWith(result[i-1]['row']); //.html(result[i-1]['row']);
+		}
+	});
+}
+
+// Sort result table by username
+function sort_by_name(){
+	result = [];
+	$.each($('#capacity_results tr'),function(i,row){
+		if (i>0){
+			result[i-1] = {};
+			result[i-1]['row'] = $(this)[0].outerHTML; //.html();
+			result[i-1]['value'] = $('td.username_field a',this).html();
+		}
+	});
+
+	console.log(result);
+	result = result.sort(sortFunctionAsc);
+	console.log(result);
+
+	$.each($('#capacity_results tr'),function(i,row){
+		if (i>0){
+			$(this).replaceWith(result[i-1]['row']); //.html(result[i-1]['row']);
+		}
+	});
+}
+
+function sortFunctionDesc(a, b) {
+    if (a['value'] === b['value']) {
+        return 0;
+    }
+    else {
+        return (a['value'] > b['value']) ? -1 : 1;
+    }
+}
+
+function sortFunctionAsc(a, b) {
+    if (a['value'] === b['value']) {
+        return 0;
+    }
+    else {
+        return (a['value'] < b['value']) ? -1 : 1;
+    }
 }

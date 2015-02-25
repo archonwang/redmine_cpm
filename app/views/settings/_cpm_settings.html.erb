@@ -48,11 +48,31 @@
 	<fieldset>
 		<legend><%=l(:"cpm.title_custom_fields")%></legend>
 		<p>
-	    <label><%=l(:"cpm.label_cmi_profile")%></label>
+	    <label><%=l(:"cpm.label_additional_info")%></label>
 	    <%= select_tag 'settings[cmi_profile]',
 	        options_from_collection_for_select(UserCustomField.all, :id, :name, (@settings['cmi_profile'] || [])), 
 	        :include_blank => true
 	    %>
+		</p>
+	</fieldset>
+	<fieldset>
+		<legend><%= check_box_tag 'settings[google_calendar]', true, @settings['google_calendar'].present? %><%= l(:"cpm.title_google_calendar_connect") %></legend>
+		<p>
+			<label><%=l(:"cpm.label_client_id")%></label>
+	    	<%= text_field_tag 'settings[client_id]', @settings['client_id'] %>
+		</p>
+		<p>
+			<label><%=l(:"cpm.label_client_secret")%></label>
+	    	<%= text_field_tag 'settings[client_secret]', @settings['client_secret'] %>
+		</p>
+		<p>
+			<label><%=l(:"cpm.label_calendar_id")%></label>
+	    	<%= text_field_tag 'settings[calendar_id]', @settings['calendar_id'] %>
+		</p>
+		<p>
+	    	<label><%=l(:"cpm.label_absence_project")%></label>
+	    	<%= select_tag 'settings[absence_project]',
+	        	options_from_collection_for_select(Project.all.sort_by{|p| p.name}, :id, :name, @settings['absence_project']) %>
 		</p>
 	</fieldset>
 </div>

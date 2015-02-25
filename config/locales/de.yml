@@ -17,8 +17,13 @@ de:
     label_project_filters: "Projekt Filter"
     title_roles: "Rollen"
     label_project_manager_role: "Projekt Manager"
-    title_custom_fields: "Campos personalizados"
-    label_cmi_profile: "Perfiles CMI"
+    title_custom_fields: "Custom fields"
+    label_additional_info: Additional information
+    title_google_calendar_connect: Google Calendar integration
+    label_client_id: Client ID
+    label_client_secret: Client secret
+    label_calendar_id: Calendar ID
+    label_absence_project: Absence project
     label_black_list_changes: "The following lists has been modified"
     label_save_changes_confirm: "Are you sure you want to save changes?"
 
@@ -43,6 +48,7 @@ de:
 
     label_hide_empty_users: "Verstecke leere Benutzer"
     label_bar_view: "Balkenansicht"
+    label_sort_by_capacity: Sort by total capacity
 
     label_project_manager: "Projekt Manager"
     label_time_unit: "Zeiteinheit"

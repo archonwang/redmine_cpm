@@ -1,1 +1,16 @@
+<%
+member_users = Project.find(@project).members.collect{|m| m.user.login}
+nomember_users = CpmUserCapacity.where('project_id = ?', @project.id).collect{|c| c.user.login}.uniq 
+diff_users = nomember_users - member_users
+
+if !diff_users.empty?
+%>
+	<div class="flash warning">
+		Los siguientes usuarios tienen horas asignadas para este proyecto pero no son miembros del mismo:
+		<ul>
+			<li><%= diff_users.join("</li><li>") %></li>
+		</ul>
+	</div>
+<% end %>
+
 <th><%= l(:'cpm.label_assignments')%></th>

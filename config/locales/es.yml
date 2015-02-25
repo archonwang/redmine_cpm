@@ -18,7 +18,12 @@ es:
     title_roles: "Roles"
     label_project_manager_role: "Jefe de proyecto"
     title_custom_fields: "Campos personalizados"
-    label_cmi_profile: "Perfiles CMI"
+    label_additional_info: "Información adicional"
+    title_google_calendar_connect: Conexión con Google Calendar
+    label_client_id: ID del cliente
+    label_client_secret: Contraseña del cliente
+    label_calendar_id: ID del calendario
+    label_absence_project: Proyecto de ausencias
     label_black_list_changes: "Se han producido cambios en las siguientes listas"
     label_save_changes_confirm: "¿Está seguro que desea guardar los cambios?"
 
@@ -44,6 +49,7 @@ es:
 
     label_hide_empty_users: "Ocultar usuarios vacios"
     label_bar_view: "Ver barras"
+    label_sort_by_capacity: Ordenar por capacidad total
 
     label_project_manager: "Jefes de proyecto"
     label_time_unit: "Unidad temporal"

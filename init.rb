@@ -9,9 +9,7 @@ Redmine::Plugin.register :redmine_cpm do
   description 'This plugin allows to manage and planning users capacity.'
   version '0.0.1'
 
-  project_module :cpmplugin do
-		permission :cpm_management, { :cpm_management => [:show, :assignments] }
-	end
+	permission :cpm_management, { :cpm_management => [:show] }
 
   settings :default => {}, :partial => 'settings/cpm_settings'
   menu  :top_menu, :cpm, { :controller => 'cpm_management', :action => 'show'}, 
