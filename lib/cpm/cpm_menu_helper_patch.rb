@@ -15,7 +15,7 @@ module CPM
       # Adds a rates tab to the user administration page
       def render_main_menu_with_cpm_menu(project)
         # Core defined data
-        if params[:controller] == 'cpm_management'
+        if ['cpm_management', 'cpm_reports'].include?(params[:controller]) 
           render_menu :cpm_menu
         else
           render_main_menu_without_cpm_menu project
@@ -23,7 +23,7 @@ module CPM
       end
       def display_main_menu_with_cpm_menu?(project)
         # Core defined data
-        if params[:controller] == 'cpm_management'
+        if ['cpm_management', 'cpm_reports'].include?(params[:controller])
           return true
         else
           display_main_menu_without_cpm_menu? project

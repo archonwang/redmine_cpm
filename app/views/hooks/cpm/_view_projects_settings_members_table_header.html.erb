@@ -8,7 +8,8 @@ if !diff_users.empty?
 	<div class="flash warning">
 		Los siguientes usuarios tienen horas asignadas para este proyecto pero no son miembros del mismo:
 		<ul>
-			<li><%= diff_users.join("</li><li>") %></li>
+			<li><%= diff_users.join("</li><li>"
+			).html_safe %></li>
 		</ul>
 	</div>
 <% end %>

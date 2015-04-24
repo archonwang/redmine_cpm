@@ -26,13 +26,18 @@ es:
     label_absence_project: Proyecto de ausencias
     label_black_list_changes: "Se han producido cambios en las siguientes listas"
     label_save_changes_confirm: "¿Está seguro que desea guardar los cambios?"
+    title_dependent_plugins: Plugins dependientes
+    text_dependent_plugins: Activa las siguientes opciones únicamente si tienes correctamente instalado y configurado el plugin indicado. Activando estas opciones puedes aumentar la información suministrada por determinados tipos de informe.
+    label_plugin_cmi: Plugin CMI
 
     label_assignments: "Asignaciones"
     label_management: "Gestión"
+    label_reports: "Informes"
 
     title_capacity_managment: "Gestión de capacidades"
     title_search_filters: "Filtros de busqueda"
     title_results: "Resultados"
+    title_capacity_reports: "Informes de capacidades"
     title_capacity_assignment: "Asignación de capacidades"
     label_user: "Usuario"
     label_users: "Usuarios"
@@ -45,6 +50,9 @@ es:
     label_start_date: "Inicio"
     label_due_date: "Fin"
     label_show_banned: "Muestra opciones ocultas"
+    label_report_type: "Tipo de informe"
+    label_select_users: "Selecciona los usuarios"
+    label_select_project_managers: "Selecciona los jefes de proyecto"
     button_assign: "Asignar"
 
     label_hide_empty_users: "Ocultar usuarios vacios"
@@ -75,6 +83,8 @@ es:
     msg_save_success: "Se ha guardado con exito"
     msg_edit_success: "Se ha modificado con exito"
     msg_delete_success: "Se ha eliminado con exito"
+
+    label_no_user_data: No hay datos del usuario
 
     unknown: "Desconocido"
     months:

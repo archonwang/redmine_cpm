@@ -1,21 +1,6 @@
 class CpmUserCapacityController < ApplicationController
   unloadable
 
-  def new_by_assignment
-    new
-    redirect_to controller:'cpm_management', action: 'assignments'
-  end
-
-  def new_by_modal
-    new
-    redirect_to  controller:'cpm_management', action:'edit_form', 
-                    user_id:@cpm_user_capacity.user_id, 
-                    from_date:params[:start_date], 
-                    to_date:params[:due_date], 
-                    projects:params[:projects],
-                    ignore_black_lists:params[:ignore_black_lists]
-  end
-
   # Add new capacity to an user for a project
   def new
     data = params[:cpm_user_capacity]
@@ -27,6 +12,13 @@ class CpmUserCapacityController < ApplicationController
     else
   		flash[:error] = @cpm_user_capacity.get_error_message
     end
+
+    redirect_to  controller:'cpm_management', action:'edit_form', 
+                    user_id:@cpm_user_capacity.user_id, 
+                    from_date:params[:start_date], 
+                    to_date:params[:due_date], 
+                    projects:params[:projects],
+                    ignore_black_lists:params[:ignore_black_lists]
   end
 
   # Edit a capacity for an user

@@ -1,7 +1,6 @@
 require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
 
-# Patches Redmine's Issue dynamically.  Adds relationships
-# Issue +has_one+ to Incident and ImprovementAction
+# Patches Redmine's Issue dynamically.
 module CPM
   module ProjectsControllerPatch
     def self.included(base) # :nodoc:

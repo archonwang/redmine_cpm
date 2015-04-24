@@ -26,13 +26,18 @@ de:
     label_absence_project: Absence project
     label_black_list_changes: "The following lists has been modified"
     label_save_changes_confirm: "Are you sure you want to save changes?"
+    title_dependent_plugins: Dependent plugins
+    text_dependent_plugins: Before to activate these options be sure you have installed and configured the indicated plugins. It allows to show more informations at generated reports.
+    label_plugin_cmi: CMI plugin
 
     label_assignments: "Zuweisung"
     label_management: "Management"
+    label_reports: "Reports"
 
     title_capacity_managment: "Management Funktionen"
     title_search_filters: "Suchfilter"
     title_results: "Ergebnisse"
+    title_capacity_reports: "Capacity Reports"
     title_capacity_assignment: "Kapazitätenzuweisung"
     label_user: "Benutzer"
     label_users: "Benutzer"
@@ -44,6 +49,9 @@ de:
     label_capacity: "Kapazität"
     label_start_date: "Startdatum"
     label_due_date: "Enddatum"
+    label_report_type: "Report type"
+    label_select_users: "Select users"
+    label_select_project_managers: "Select project managers"
     button_assign: "Zuweisen"
 
     label_hide_empty_users: "Verstecke leere Benutzer"
@@ -74,6 +82,8 @@ de:
     msg_save_success: "Fortschritt speichern"
     msg_edit_success: "Fortschritt bearbeiten"
     msg_delete_success: "Fortschritt löschen"
+
+    label_no_user_data: No user data
 
     unknown: "Unbekannt"
     months:
