@@ -18,4 +18,6 @@ Redmine::Plugin.register :redmine_cpm do
 
   menu :cpm_menu, :show, { :controller => 'cpm_management', :action => 'show' },
        :caption => :'cpm.label_management'
+  menu :cpm_menu, :reports, { :controller => 'cpm_reports', :action => 'reports' },
+       :caption => :'cpm.label_reports'
 end

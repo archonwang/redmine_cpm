@@ -289,9 +289,7 @@ function sort_by_capacity(){
 		}
 	});
 
-	console.log(result);
 	result = result.sort(sortFunctionDesc);
-	console.log(result);
 
 	$.each($('#capacity_results tr'),function(i,row){
 		if (i>0){
@@ -311,9 +309,7 @@ function sort_by_name(){
 		}
 	});
 
-	console.log(result);
 	result = result.sort(sortFunctionAsc);
-	console.log(result);
 
 	$.each($('#capacity_results tr'),function(i,row){
 		if (i>0){

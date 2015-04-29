@@ -5,7 +5,7 @@
   before_filter :set_menu_item
   before_filter :oauth_authentication, :only => :show, :unless => :oauth_token?
 
-  helper :cpm_management
+  helper :cpm_management, :cpm_app
 
   def oauth_token?
     !Setting.plugin_redmine_cpm[:google_calendar].present? or session[:oauth_token].present?
@@ -49,16 +49,9 @@
 
   # Capacity search result
   def planning
+    # if google calendar integration is activated, get google calendar info
     if Setting.plugin_redmine_cpm[:google_calendar].present?
       get_calendar
-    end
-    # set black list arrays to empty if 'ignore_black_lists' filter is activated
-    if !params['ignore_black_lists'].present?
-      ignored_users = Setting.plugin_redmine_cpm['ignored_users'] || [0]
-      ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
-    else
-      ignored_users = [0]
-      ignored_projects =[0]
     end
 
     # users and projects to show in planning table
@@ -68,62 +61,46 @@
     # getting @projects array
     # add projects specified by project manager filter
     if params[:project_manager].present?
-      project_manager_role = Setting.plugin_redmine_cpm['project_manager_role'];
-      if project_manager_role.present?
-        @projects += MemberRole.find(:all, :include => :member, :conditions => ['members.user_id IN (?) AND role_id = ?', params[:project_manager].join(','), project_manager_role]).collect{|mr| mr.member.project_id}
-      end
+      @projects += CPM::Filters.project_manager(params[:project_manager])
     end
 
     # exclude ignored projects
-    @projects = @projects.uniq.reject{|p| ignored_projects.include?(p.to_s)}
+    @projects = @projects.uniq.reject{|p| Project.not_allowed(params['ignore_black_lists'].present?).include?(p.to_s)}
 
     # filter projects if custom field filters are specified
     if params[:custom_field].present?
-      filtered_projects = []
-
       # if there are no projects specified and there are field filters specified, get all not ignored projects by default
       if @projects.empty?
-        @projects = Project.where("id NOT IN (?)", ignored_projects).sort_by{|p| p.name}.collect{|p| p.id}
-      end
-      
-      # for each project available will check if match with all custom field filters activated
-      @projects.each do |p|
-        filter = false
-        params[:custom_field].each do |cf,v|
-          if !filter
-            filter = CustomValue.where("customized_type = ? AND customized_id = ? AND custom_field_id = ? AND value IN (?)","Project",p,cf,v.map{|e| e}) == []
-          end
-        end
-        if !filter
-          filtered_projects << p
-        end
+        @projects = Project.allowed(params['ignore_black_lists'].present?).sort_by{|p| p.name}.collect{|p| p.id}
       end
 
-      @projects = filtered_projects
+      @projects = CPM::Filters.custom_field(params[:custom_field], @projects)
     end
 
     # add projects specified by project filter
     if params[:projects].present?
-      @projects += params[:projects]
+      @projects += CPM::Filters.projects(params[:projects])
       @projects.uniq
     end
 
     # if @projects are empty, get all not ignored projects by default
     if @projects.empty? and !params[:custom_field].present? and !params[:project_manager].present?
-      #flash.now[:warning] = l(:'cpm.msg_projects_not_found')
-      @projects = Project.where("id NOT IN (?)", ignored_projects).sort_by{|p| p.name}.collect{|p| p.id}
+      @projects = Project.allowed(params['ignore_black_lists'].present?).sort_by{|p| p.name}.collect{|p| p.id}
+      @projects_params = []
+    else
+      @projects_params = @projects
     end
 
     if !@projects.empty?
       # getting @users array
       # add users specified by users filter
       if params[:users].present?
-        @users += User.where("id IN (?)", params[:users])
+        @users += CPM::Filters.projects(params[:users]).collect{|u| User.find(u)}
       end
 
       # add users specified by groups filter
       if params[:groups].present?
-        @users += Group.where("id IN (?)", params[:groups]).collect{|g| g.users.reject{|u| ignored_users.include?((u.id).to_s)}}.flatten
+        @users += CPM::Filters.groups(params[:groups], params['ignore_black_lists']).collect{|u| User.find(u)}
       end
 
       # reorder and unify users
@@ -138,12 +115,7 @@
         # get users who have time entries in projects
         time_entries = projects.collect{|p| p.time_entries.collect{|te| te.user_id}}.flatten
 
-        @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| ignored_users.include?((u.id).to_s)}.sort_by{|u| u.login}
-      # if there are no projects selected, get them based on users selected
-      #elsif @projects.blank? and !@users.blank?
-        #members = Project.joins(:memberships).where("members.user_id IN (?)",@users)
-        #time_entries = Project.joins(:time_entries).where("time_entries.user_id IN (?)",@users)
-        #@projects = Project.where("id IN (?)", (members+time_entries).uniq).reject{|p| ignored_projects.include?((p.id).to_s)}.sort_by{|p| p.name}.collect{|p| p.id}
+        @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| User.not_allowed(params['ignore_black_lists'].present?).include?((u.id).to_s)}.sort_by{|u| u.login}
       end
     end
 
@@ -151,6 +123,7 @@
     @time_unit = params[:time_unit] || 'week'
     @time_unit_num = (params[:time_unit_num] || 12).to_i
 
+    # if google calendar integration is activated, create new capacities for each entry
     if @calendar.present?
       absence_project_id = Setting.plugin_redmine_cpm['absence_project']
       if absence_project_id.present?
@@ -166,13 +139,17 @@
       end
     end
 
+    # create object for result table info
     @capacities = {}
     @users.each do |user|
       @capacities[user.id] = @time_unit_num.times.collect{|i| {'value' => 0.0, 'tooltip' => ""}}
+      
+      # get all user capacities
       capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?)',user.id, @projects)
       capacities += holidays[user.id] if holidays.present?
 
       capacities.each do |capacity|
+        # for each user capacity, update respective table cell
         @time_unit_num.times do |i|
           start_day = CPM::CpmDate.get_start_date(@time_unit,i)
           end_day = CPM::CpmDate.get_due_date(@time_unit,i)
@@ -182,6 +159,7 @@
       end
     end
     
+    # if request is called from AJAX, update only 'planning' partial
     if request.xhr?
       render "cpm_management/_planning" ,layout: false
     end
@@ -189,21 +167,22 @@
 
   # Capacity edit form
   def edit_form
-    # set projects black list array to empty if 'ignore_black_lists' filter is activated
-    if !params['ignore_black_lists'].present?
-      ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
-    else
-      ignored_projects =[0]
-    end
-
     user = User.find_by_id(params[:user_id])
-    projects = params[:projects]
+
+    # get all available projects
+    all_projects = Project.allowed(params['ignore_black_lists'].present?).sort_by{|p| p.name}
+
+    if params[:projects].present?
+      projects = params[:projects]
+    else
+      projects = all_projects.collect{|p| p.id}
+    end
     
     @from_date = Date.strptime(params[:from_date], "%d/%m/%y")
     @to_date = Date.strptime(params[:to_date], "%d/%m/%y")
 
     # load pojects options
-    @projects_for_selection = Project.where("id NOT IN (?)", ignored_projects).sort_by{|p| p.name}.collect{|p| [p.name,p.id]}
+    @projects_for_selection = all_projects.collect{|p| [p.name,p.id]}
     
     if projects.present?
       @default_project = projects[0]
@@ -214,7 +193,7 @@
     @capacities = user.get_range_capacities(@from_date,@to_date,projects)
 
     @capacities.each do |c|
-      if !c.check_capacity(ignored_projects)
+      if !c.check_capacity(Project.not_allowed(params['ignore_black_lists'].present?))
         flash[:warning] = l(:"cpm.msg_capacity_higher_than_100")
       end
     end
@@ -227,18 +206,12 @@
 
 # Search filters
   def get_filter_users
-    ignored_users = Setting.plugin_redmine_cpm['ignored_users'] || [0]
-
-    if params['show_banned_users'].present?
-      ignored_users = [0]
-    end
-
     @users_selected = []
     if params['users'].present?
       @users_selected = params['users']
     end
 
-    @users_options = User.where("id NOT IN(?)", ignored_users).sort_by{|u| u.login}.collect{|u| [u.login, (u.id).to_s]}
+    @users_options = User.allowed(params['show_banned_users']).sort_by{|u| u.login}.collect{|u| [u.login, (u.id).to_s]}
 
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/users', :layout => false, :locals => { :options => @users_options }) }
@@ -264,17 +237,12 @@
   end
 
   def get_filter_projects
-    ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
-    if params['show_banned_projects'].present?
-      ignored_projects = [0]
-    end
-
     @projects_selected = []
     if params['projects'].present?
       @projects_selected = params['projects']
     end
 
-    @projects_options = Project.where("id NOT IN (?)", ignored_projects).sort_by{|p| p.name}.collect{|p| [CGI::escapeHTML(p.name), (p.id).to_s]}
+    @projects_options = Project.allowed(params['show_banned_projects']).sort_by{|p| p.name}.collect{|p| [p.name, (p.id).to_s]}
 
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/projects', :layout => false, :locals => { :options => @projects_options }) }
@@ -282,20 +250,9 @@
   end
 
   def get_filter_project_manager
-    ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
     project_manager_role = Setting.plugin_redmine_cpm['project_manager_role'];
 
-    role_pm = Role.find_by_id(project_manager_role)
-
-    users = []
-    Project.where("id NOT IN (?)", ignored_projects).collect{|p|
-      project_manager = p.users_by_role[role_pm]
-      if project_manager.present?
-        project_manager.each do |pm|
-          users << pm
-        end
-      end
-    }
+    users = User.get_by_role(project_manager_role)
 
     @project_manager_selected = []
     if params['project_manager'].present?
@@ -355,6 +312,8 @@
     end
   end
   
+
+# Google Calendar
   def oauth_authentication
     session[:params] = params
     redirect_to oauth_client.auth_code.authorize_url(:redirect_uri => oauth_callback_url, :scope => scopes, :access_type => 'offline', :approval_prompt => 'force')

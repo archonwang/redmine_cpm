@@ -1,0 +1,3 @@
+The main authors of this plugin are:
+ * Carlos Parra <cparra@emergya.com>
+ * Juan Resinas <jresinas@emergya.com>

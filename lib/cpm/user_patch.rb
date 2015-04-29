@@ -17,6 +17,24 @@ module CPM
     end
 
     module ClassMethods
+      def not_allowed(ignore_blacklist = false)
+        if ignore_blacklist
+          [0]
+        else
+          Setting.plugin_redmine_cpm['ignored_users'] || [0]
+        end
+      end
+
+      def allowed(ignore_blacklist = false)
+        where("id NOT IN (?)", not_allowed(ignore_blacklist))
+      end
+
+      # Get users who has the specified role in almost any project
+      def get_by_role(role_id)
+        allowed = Project.allowed.collect{|p| p.id}
+        
+        User.find(:all, :include => [:members, {:members => :member_roles}], :conditions => ["members.project_id NOT IN ("+Project.not_allowed.join(',')+") AND member_roles.role_id = ? AND users.id NOT IN ("+not_allowed.join(',')+")", role_id]).uniq
+      end
     end
 
     module InstanceMethods
