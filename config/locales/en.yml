@@ -29,6 +29,7 @@ en:
     title_dependent_plugins: Dependent plugins
     text_dependent_plugins: Before to activate these options be sure you have installed and configured the indicated plugins. It allows to show more informations at generated reports.
     label_plugin_cmi: CMI plugin
+    label_plugin_knowledge_manager: Knowledge Manager Plugin
 
     label_assignments: "Assignments"
     label_management: "Management"
@@ -60,6 +61,7 @@ en:
     label_sort_by_capacity: Sort by total capacity
 
     label_project_manager: "Project manager"
+    label_knowledges: Knowledges
     label_time_unit: "Time unit"
     label_time_unit_num: "Time unit num"
     label_ignore_black_lists: "Ignore Black lists"
@@ -85,6 +87,10 @@ en:
     msg_delete_success: "Delete success"
 
     label_no_user_data: No user data
+
+    label_show_knowledges: Show knowledges
+    label_knowledges: Knowledges
+    label_show_all: Show all
 
     unknown: "Unknown"
     months:

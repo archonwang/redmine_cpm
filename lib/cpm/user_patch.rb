@@ -83,6 +83,23 @@ module CPM
         info
       end
 
+      # Show knowledges tooltip
+      def show_tooltip_knowledges
+        info = "<ul>"
+
+        user_knowledges.sort_by{|k| k.name}.each do |knowledge|
+          info += "<li>"
+          info += "<b>" if knowledge.knowledge.main.present?
+          info += knowledge.name+" - "+knowledge.level_name
+          info += "</b>" if knowledge.knowledge.main.present?
+          info += "</li>"
+        end
+
+        info += "</ul>"
+
+        info
+      end
+
       # Get html capacity summary for user's welcome page
       def get_capacity_summary
         today = Date.today

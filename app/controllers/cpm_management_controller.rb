@@ -59,64 +59,65 @@
     @projects = []
 
     # getting @projects array
-    # add projects specified by project manager filter
-    if params[:project_manager].present?
-      @projects += CPM::Filters.project_manager(params[:project_manager])
+    # add projects specified by project filter
+    if params[:projects].present?
+      @projects = CPM::Filters.projects(params[:projects])
+    else
+      @projects = Project.allowed(params['ignore_black_lists'].present?).collect{|p| p.id} #.sort_by{|p| p.name}
     end
 
-    # exclude ignored projects
-    @projects = @projects.uniq.reject{|p| Project.not_allowed(params['ignore_black_lists'].present?).include?(p.to_s)}
+    # add projects specified by project manager filter
+    if params[:project_manager].present?
+      @projects = CPM::Filters.project_manager(params[:project_manager], @projects)
+    end
 
     # filter projects if custom field filters are specified
     if params[:custom_field].present?
-      # if there are no projects specified and there are field filters specified, get all not ignored projects by default
-      if @projects.empty?
-        @projects = Project.allowed(params['ignore_black_lists'].present?).sort_by{|p| p.name}.collect{|p| p.id}
-      end
-
       @projects = CPM::Filters.custom_field(params[:custom_field], @projects)
     end
 
-    # add projects specified by project filter
-    if params[:projects].present?
-      @projects += CPM::Filters.projects(params[:projects])
-      @projects.uniq
-    end
-
-    # if @projects are empty, get all not ignored projects by default
-    if @projects.empty? and !params[:custom_field].present? and !params[:project_manager].present?
-      @projects = Project.allowed(params['ignore_black_lists'].present?).sort_by{|p| p.name}.collect{|p| p.id}
-      @projects_params = []
-    else
-      @projects_params = @projects
-    end
 
     if !@projects.empty?
       # getting @users array
       # add users specified by users filter
       if params[:users].present?
-        @users += CPM::Filters.projects(params[:users]).collect{|u| User.find(u)}
+        @users = CPM::Filters.projects(params[:users])
+      else
+        @users = User.allowed(params['ignore_black_lists'].present?).collect{|u| u.id}
       end
 
       # add users specified by groups filter
       if params[:groups].present?
-        @users += CPM::Filters.groups(params[:groups], params['ignore_black_lists']).collect{|u| User.find(u)}
+        @users = CPM::Filters.groups(params[:groups], @users)
       end
-
-      # reorder and unify users
-      @users = @users.uniq.sort_by{|u| u.login}
-
-      # if there are no users selected, get them based on projects selected
-      if !@projects.blank? and @users.blank?
-        projects = Project.where("id IN ("+@projects.join(',')+")")
-
-        # get users who are project members
-        members = projects.collect{|p| p.members.collect{|m| m.user_id}}.flatten
-        # get users who have time entries in projects
-        time_entries = projects.collect{|p| p.time_entries.collect{|te| te.user_id}}.flatten
-
-        @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| User.not_allowed(params['ignore_black_lists'].present?).include?((u.id).to_s)}.sort_by{|u| u.login}
+      
+      # knowledge filter
+      if params[:knowledges].present?
+        @users = CPM::Filters.knowledges(params[:knowledges], @users)
       end
+    end
+
+    # get projects objects
+    if @projects.present?
+      @projects = Project.where("id IN (?)",@projects).sort_by{|p| p.name}
+    else
+      @projects = []
+    end
+
+    # get users objects
+    # if there are NO users filters active, get users based on projects selected
+    if !params[:users].present? and !params[:groups].present? and !params[:knowledges].present?
+      # get users who are project members
+      members = Member.select("user_id").where("project_id IN (?)", @projects).collect(&:user_id)
+      # get users who have time entries in projects
+      time_entries = TimeEntry.select("user_id").where("project_id IN (?)", @projects).collect(&:user_id)
+
+      users_not_allowed = User.not_allowed(params['ignore_black_lists'].present?)
+      @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| users_not_allowed.include?((u.id).to_s)}.sort_by{|u| u.login}
+    elsif @users.present?
+      @users = User.where("id IN (?)",@users).sort_by{|u| u.login}
+    else
+      @users = []
     end
 
     # set time_unit and time_unit_num default values
@@ -132,7 +133,7 @@
           holidays[user.id] = []
           if @calendar[user.login].present?
             @calendar[user.login].each do |cpm|
-              holidays[user.id] << CpmUserCapacity.new(user_id: user.id, project_id: absence_project_id, capacity: 100, from_date: cpm[0], to_date: cpm[1])
+              holidays[user.id] << CpmUserCapacity.new(user_id: user.id, project_id: absence_project_id, capacity: 100, from_date: cpm[0].to_datetime, to_date: cpm[1].to_datetime)
             end
           end
         end
@@ -211,7 +212,7 @@
       @users_selected = params['users']
     end
 
-    @users_options = User.allowed(params['show_banned_users']).sort_by{|u| u.login}.collect{|u| [u.login, (u.id).to_s]}
+    @users_options = User.allowed(params['show_all_users']).sort_by{|u| u.login}.collect{|u| [u.login, (u.id).to_s]}
 
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/users', :layout => false, :locals => { :options => @users_options }) }
@@ -220,7 +221,7 @@
 
   def get_filter_groups
     ignored_groups = Setting.plugin_redmine_cpm['ignored_groups'] || [0]
-    if params['show_banned_groups'].present?
+    if params['show_all_groups'].present?
       ignored_groups = [0]
     end
 
@@ -242,7 +243,7 @@
       @projects_selected = params['projects']
     end
 
-    @projects_options = Project.allowed(params['show_banned_projects']).sort_by{|p| p.name}.collect{|p| [p.name, (p.id).to_s]}
+    @projects_options = Project.allowed(params['show_all_projects']).sort_by{|p| p.name}.collect{|p| [p.name, (p.id).to_s]}
 
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/projects', :layout => false, :locals => { :options => @projects_options }) }
@@ -311,6 +312,23 @@
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/ignore_black_lists', :layout => false )}
     end
   end
+
+  def get_filter_knowledges
+    @knowledges_selected = []
+    if params['knowledges'].present?
+      @knowledges_selected = params['knowledges']
+    end
+
+    if params['show_all_knowledges'].present?
+      @knowledges_options = Knowledge.name_options
+    else
+      @knowledges_options = Knowledge.main_options
+    end
+
+    if request.xhr?
+      render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/knowledges', :layout => false, :locals => { :options => @knowledges_options }) }
+    end
+  end
   
 
 # Google Calendar
@@ -347,8 +365,8 @@
             unless calendar[matches[1]].present?
               calendar[matches[1]] = []
             end
-            
-            calendar[matches[1]] << [e['start']['dateTime'].to_time+1.hour,e['end']['dateTime'].to_time+1.hour-1.day]
+
+            calendar[matches[1]] << [e['start']['dateTime'].to_date,e['end']['dateTime'].to_date-1.day]
           end
         end
       end

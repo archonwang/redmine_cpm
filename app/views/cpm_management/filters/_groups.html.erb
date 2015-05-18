@@ -4,7 +4,7 @@
 	<div class='filter_options'>
 		<%= select_tag 'groups[]', options_for_select(@groups_options, selected: @groups_selected), class: 'filter_groups', multiple: true, size: 10 %>
 		<div>
-			<input type='checkbox' class='filter_groups show_banned' name='show_banned_groups' onclick='update_filter("groups",$("#groups input.show_banned").is(":checked"),$("#groups select.filter_groups").serializeArray());' <% if params['show_banned_groups']=='true' %> checked  <% end %> >
+			<input type='checkbox' class='filter_groups show_all' name='show_all_groups' onclick='update_filter("groups",$("#groups input.show_all").is(":checked"),$("#groups select.filter_groups").serializeArray());' <% if params['show_all_groups']=='true' %> checked  <% end %> >
 			<span class='filter_groups'><%=l(:"cpm.label_show_banned")%></span>
 		</div>
 	</div>

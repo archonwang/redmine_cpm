@@ -29,6 +29,7 @@ es:
     title_dependent_plugins: Plugins dependientes
     text_dependent_plugins: Activa las siguientes opciones únicamente si tienes correctamente instalado y configurado el plugin indicado. Activando estas opciones puedes aumentar la información suministrada por determinados tipos de informe.
     label_plugin_cmi: Plugin CMI
+    label_plugin_knowledge_manager: Plugin Knowledge Manager
 
     label_assignments: "Asignaciones"
     label_management: "Gestión"
@@ -60,6 +61,7 @@ es:
     label_sort_by_capacity: Ordenar por capacidad total
 
     label_project_manager: "Jefes de proyecto"
+    label_knowledges: Conocimientos
     label_time_unit: "Unidad temporal"
     label_time_unit_num: "Núm. unidades temporales"
     label_ignore_black_lists: "Ignorar Listas negras"
@@ -85,6 +87,10 @@ es:
     msg_delete_success: "Se ha eliminado con exito"
 
     label_no_user_data: No hay datos del usuario
+
+    label_show_knowledges: Mostrar conocimientos
+    label_knowledges: Conocimientos
+    label_show_all: Ver todos
 
     unknown: "Desconocido"
     months:

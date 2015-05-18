@@ -4,7 +4,7 @@
 	<div class='filter_options'>
 		<%= select_tag 'projects[]', options_for_select(@projects_options, selected: @projects_selected), class: 'filter_projects', multiple: true, size: 10 %>
 		<div>
-			<input type='checkbox' class='filter_projects show_banned' name='show_banned_projects' onclick='update_filter("projects",$("#projects input.show_banned").is(":checked"),$("#projects select.filter_projects").serializeArray());' <% if params['show_banned_projects']=='true' %> checked  <% end %> >
+			<input type='checkbox' class='filter_projects show_all' name='show_all_projects' onclick='update_filter("projects",$("#projects input.show_all").is(":checked"),$("#projects select.filter_projects").serializeArray());' <% if params['show_all_projects']=='true' %> checked  <% end %> >
 			<span class='filter_projects'><%=l(:"cpm.label_show_banned")%></span>
 		</div>
 	</div>

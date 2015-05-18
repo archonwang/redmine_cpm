@@ -7,17 +7,17 @@ module CPM
     end
 
     def self.users(users)
-    	User.where("id IN (?)", users)
+      users
     end
 
-    def self.groups(groups, ignore_blacklist)
-    	Group.where("id IN (?)", groups).collect{|g| g.users.reject{|u| User.not_allowed(ignore_blacklist).include?((u.id).to_s)}}.flatten
+    def self.groups(groups, users) #, ignore_blacklist)
+      User.includes(:groups).where("groups_users_join.group_id IN (?) AND users.id IN (?)", groups, users)
     end
 
-    def self.project_manager(ids)
+    def self.project_manager(ids, projects)
     	project_manager_role = Setting.plugin_redmine_cpm['project_manager_role']
       if project_manager_role.present?
-        projects = MemberRole.find(:all, :include => :member, :conditions => ['members.user_id IN ('+ids.to_a.join(',')+') AND role_id = ?', project_manager_role]).collect{|mr| mr.member.project_id}
+        projects = MemberRole.find(:all, :include => :member, :conditions => ['members.user_id IN ('+ids.to_a.join(',')+') AND members.project_id IN (?) AND role_id = ?', projects, project_manager_role]).collect{|mr| mr.member.project_id}
       end
 
       projects
@@ -46,6 +46,10 @@ module CPM
     end
 
     def self.time_unit_num
+    end
+
+    def self.knowledges(knowledges, users)
+      User.with_knowledges(knowledges,users).collect{|u| u.id}
     end
 
 	end
