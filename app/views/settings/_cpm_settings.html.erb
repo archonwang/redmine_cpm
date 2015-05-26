@@ -85,6 +85,10 @@
 			<label><%=l(:"cpm.label_plugin_cmi")%></label>
 	    	<%= check_box_tag 'settings[plugin_cmi]', true, @settings['plugin_cmi'].present? %>
 		</p>
+		<p>
+			<label><%=l(:"cpm.label_plugin_knowledge_manager")%></label>
+	    	<%= check_box_tag 'settings[plugin_knowledge_manager]', true, @settings['plugin_knowledge_manager'].present? %>
+		</p>
 	</fieldset>
 </div>
 <div style="clear: both;"></div>
@@ -126,8 +130,10 @@ $(document).ready(function(){
 
 // Check if two arrays have the same elements
 function array_equals(arr1,arr2){
+	arr1 = arr1 || [];
+	arr2 = arr2 || [];
 	equals = true;
-
+	
 	$.each(arr1,function(i,element){
 		if ($.inArray(element,arr2)<0){
 			equals = false;
@@ -139,7 +145,7 @@ function array_equals(arr1,arr2){
 			equals = false;
 		}
 	});
-
+	
 	return equals;
 }
 </script>

@@ -1,0 +1,11 @@
+<div id='knowledges' class='filter'>
+	<input id='filter_knowledges' class='enable_filter' type='checkbox' checked /> 
+	<span class='filter_name'><%=l(:"cpm.label_knowledges")%></span> 
+	<div class='filter_options'>
+		<%= select_tag 'knowledges[]', options_for_select(@knowledges_options, selected: @knowledges_selected), class: 'filter_knowledges', multiple: true, size: 10 %>
+		<div>			
+			<input type='checkbox' class='filter_knowledges show_all' name='show_all_knowledges' onclick='update_filter("knowledges",$("#knowledges input.show_all").is(":checked"),$("#knowledges select.filter_knowledges").serializeArray());' <% if params['show_all_knowledges'].present? %> checked  <% end %> >
+			<span class='filter_knowledges'><%=l(:"cpm.label_show_all")%></span>
+		</div>
+	</div>
+</div>

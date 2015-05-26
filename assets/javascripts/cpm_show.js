@@ -65,6 +65,15 @@ $(document).ready(function(){
 		strip_table("capacity_results");
 	});
 
+	// Click on option "Show knowledges"
+	$(document).on('change','#show_knowledges',function(){
+		if ($(this).is(':checked')){
+			show_knowledges();
+		} else {
+			hide_knowledges();
+		}
+	});
+
 	// Update user capacity edition
 	$(document).on('ajax:success', '.edit_cpm_user_capacity', function(data, status, xhr){
 		$('#dialog').html(status);
@@ -77,7 +86,7 @@ $(document).ready(function(){
 });
 
 // Show the specified filter
-function add_filter(filter_name,show_banned,options){
+function add_filter(filter_name,show_all,options){
 	if ($.isNumeric(filter_name)){
 		url = "custom_field/"+filter_name;
 	} else {
@@ -85,8 +94,8 @@ function add_filter(filter_name,show_banned,options){
 	}
 
 	data = {}
-	if (show_banned == true){
-		data['show_banned_'+filter_name] = show_banned;
+	if (show_all == true){
+		data['show_all_'+filter_name] = show_all;
 		data[filter_name]=options;
 	} else {
 		data[filter_name]=options;
@@ -113,7 +122,7 @@ function add_filter(filter_name,show_banned,options){
 	$('#select_filter').val("default");
 }
 
-function update_filter(filter_name,show_banned,options){
+function update_filter(filter_name,show_all,options){
 	// Delete specified filter
 	$('#'+filter_name).empty();
 
@@ -122,7 +131,7 @@ function update_filter(filter_name,show_banned,options){
 		options_arr.push(option['value']);
 	});
 	// Show specified filter
-	add_filter(filter_name,show_banned,options_arr);
+	add_filter(filter_name,show_all,options_arr);
 }
 
 // Hide all user rows with all capacities empty
@@ -173,7 +182,7 @@ function view_bars(){
 	$.each($('#capacity_results tr'),function(i,row){
 		if (i>0){
 			$.each($('td',row),function(j,col){
-				if (j>0){
+				if (j>0 && !$(col).hasClass('knowledge')){
 					value = $(col).attr('value');
 					fill_bar = parseInt(value/2);
 					empty_bar = 50-fill_bar;
@@ -198,6 +207,16 @@ function view_numbers(){
 	});
 }
 
+// Show column with users' knowledges
+function show_knowledges(){
+	$('.knowledge').show();
+}
+
+// Hide column with users' knowledges
+function hide_knowledges(){
+	$('.knowledge').hide();
+}
+
 // Apply actual visualization options to the result table
 function apply_options(){
 	if ($('#sort_by_capacity').is(':checked')){
@@ -216,6 +235,12 @@ function apply_options(){
 		hide_empty_results();
 	} else {
 		show_all_results();
+	}
+
+	if ($('#show_knowledges').is(':checked')){
+		show_knowledges();
+	} else {
+		hide_knowledges();
 	}
 
 	strip_table("capacity_results");
@@ -282,7 +307,7 @@ function sort_by_capacity(){
 			result[i-1]['row'] = $(this)[0].outerHTML; //.html();
 			result[i-1]['value'] = 0;
 			$.each($('td',row),function(j,col){
-				if (j>0){
+				if (j>0 && !$(col).hasClass('knowledge')){
 					result[i-1]['value'] += parseInt($(col).attr('value'));
 				}
 			});

@@ -97,6 +97,15 @@ td.username_field{
 	vertical-align: middle !important;
 }
 
+td.knowledge, th.knowledge{
+	display: none;
+}
+
+td.knowledge{
+	vertical-align: middle !important;
+}
+
+
 
 
 div.edit_row_content{

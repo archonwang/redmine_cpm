@@ -37,10 +37,10 @@ module CPM
         projects.each do |p|
           result[i][:projects][j] = {}
           result[i][:projects][j][:name] = p.name
-          if Setting.plugin_redmine_cpm['plugin_cmi'].present? and p.cmi_project_info.present? and p.cmi_project_info.scheduled_finish_date.present?
-            result[i][:projects][j][:end] = '('+p.cmi_project_info.scheduled_finish_date.strftime("%d/%m/%Y")+')' #p.created_on.strftime("%d/%m/%Y")
+          if Setting.plugin_redmine_cpm['plugin_cmi'].present? and p.cmi_project_info.present? and p.cmi_checkpoints.present?
+            result[i][:projects][j][:end] = '('+p.finish_date.strftime("%d/%m/%Y")+')'
           else
-            result[i][:projects][j][:end] = '' #p.created_on.strftime("%d/%m/%Y")
+            result[i][:projects][j][:end] = ''
           end
           result[i][:projects][j][:members] = []
           k = 0
