@@ -131,7 +131,12 @@ module CPM
           end
 
           if l != 0
-             pm_index = p.users_by_role[pm_role[0]].collect{|pm| pm.login}.sort.join(', ')
+            jps = p.users_by_role[pm_role[0]]
+            if jps.present?
+              pm_index = jps.collect{|pm| pm.login}.sort.join(', ')
+            else
+              pm_index = '-'
+            end
 
             if !result[i][:project_managers][pm_index].present? 
               result[i][:project_managers][pm_index] = []
