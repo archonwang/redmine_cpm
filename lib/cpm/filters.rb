@@ -17,7 +17,7 @@ module CPM
     def self.project_manager(ids, projects)
     	project_manager_role = Setting.plugin_redmine_cpm['project_manager_role']
       if project_manager_role.present?
-        projects = MemberRole.find(:all, :include => :member, :conditions => ['members.user_id IN ('+ids.to_a.join(',')+') AND members.project_id IN (?) AND role_id = ?', projects, project_manager_role]).collect{|mr| mr.member.project_id}
+        projects = MemberRole.joins(:member).where('members.user_id IN ('+ids.to_a.join(',')+') AND members.project_id IN (?) AND role_id = ?', projects, project_manager_role).collect{|mr| mr.member.project_id}
       end
 
       projects

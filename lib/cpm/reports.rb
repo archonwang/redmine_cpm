@@ -32,8 +32,10 @@ module CPM
         result[i][:projects] = []
         j = 0
   
-        projects = Project.find(:all, :include => [:memberships, {:memberships => :member_roles}], :conditions => ["members.user_id = ? AND member_roles.role_id = ? AND projects.id NOT IN (?)", pm.id, project_manager_role, Project.not_allowed])
-  
+        #projects = Project.find(:all, :include => [:memberships, {:memberships => :member_roles}], :conditions => ["members.user_id = ? AND member_roles.role_id = ? AND projects.id NOT IN (?)", pm.id, project_manager_role, Project.not_allowed])
+        projects = Project.joins(:memberships, {:memberships => :member_roles}).where("members.user_id = ? AND member_roles.role_id = ? AND projects.id NOT IN (?)", pm.id, project_manager_role, Project.not_allowed)
+      
+
         projects.each do |p|
           result[i][:projects][j] = {}
           result[i][:projects][j][:name] = p.name
@@ -46,14 +48,16 @@ module CPM
           k = 0
   
   
-          users = User.find(:all, :include => [{:cpm_capacities => :project}], :conditions => ["projects.id = ?", p.id])
+          #users = User.find(:all, :include => [{:cpm_capacities => :project}], :conditions => ["projects.id = ?", p.id])
+          users = User.joins({:cpm_capacities => :project}).where("projects.id = ?", p.id)
           users.each do |u|
             
             result[i][:projects][j][:members][k] = {}
             result[i][:projects][j][:members][k][:name] = u.login
             result[i][:projects][j][:members][k][:capacities] = []
             l = 0
-            capacities = CpmUserCapacity.find(:all, :conditions => ["user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today])
+            #capacities = CpmUserCapacity.find(:all, :conditions => ["user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today])
+            capacities = CpmUserCapacity.where("user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today)
             capacities.each do |c|
               result[i][:projects][j][:members][k][:capacities][l] = {}
               result[i][:projects][j][:members][k][:capacities][l][:capacity] = c[:capacity]
@@ -107,7 +111,8 @@ module CPM
         result[i][:name] = u.login
         result[i][:project_managers] = {}
 
-        projects = Project.find(:all, :include => [{:capacities => :user}], :conditions => ["users.id = ?", u.id])
+        #projects = Project.find(:all, :include => [{:capacities => :user}], :conditions => ["users.id = ?", u.id])
+        projects = Project.joins({:capacities => :user}).where("users.id = ?", u.id)
 
         projects.each do |p|
           project = {}
@@ -121,7 +126,8 @@ module CPM
           project[:capacities] = []
 
           l = 0
-          capacities = CpmUserCapacity.find(:all, :conditions => ["user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today])
+          #capacities = CpmUserCapacity.find(:all, :conditions => ["user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today])
+          capacities = CpmUserCapacity.where("user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today)
           capacities.each do |c|
             project[:capacities][l] = {}
             project[:capacities][l][:capacity] = c[:capacity]

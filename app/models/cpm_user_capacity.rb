@@ -6,9 +6,9 @@ class CpmUserCapacity < ActiveRecord::Base
   unloadable
   validates :capacity, :presence => true, numericality: { only_integer: true }, :inclusion => {:in => (0..100).step(5), :message => " tiene que ser multiplo de 5 comprendido entre 0 y 100."}
   validates :from_date,	:presence => true, 
-  						:format => {:with => /^\d{4}-\d{2}-\d{2}/, :message => " tiene que ser una fecha válida" }
+  						:format => {:with => /\A\d{4}-\d{2}-\d{2}/, :message => " tiene que ser una fecha válida" }
   validates :to_date, 	:presence => true, 
-  						:format => {:with => /^\d{4}-\d{2}-\d{2}/, :message => " tiene que ser una fecha válida" }
+  						:format => {:with => /\A\d{4}-\d{2}-\d{2}/, :message => " tiene que ser una fecha válida" }
   validate :to_date_after_from_date
 
   before_save do 
