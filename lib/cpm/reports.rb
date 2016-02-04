@@ -32,8 +32,9 @@ module CPM
         result[i][:projects] = []
         j = 0
   
-        projects = Project.find(:all, :include => [:memberships, {:memberships => :member_roles}], :conditions => ["members.user_id = ? AND member_roles.role_id = ? AND projects.id NOT IN (?)", pm.id, project_manager_role, Project.not_allowed])
-  
+        projects = Project.joins(:memberships, {:memberships => :member_roles}).where("members.user_id = ? AND member_roles.role_id = ? AND projects.id NOT IN (?)", pm.id, project_manager_role, Project.not_allowed)
+      
+
         projects.each do |p|
           result[i][:projects][j] = {}
           result[i][:projects][j][:name] = p.name
@@ -45,15 +46,14 @@ module CPM
           result[i][:projects][j][:members] = []
           k = 0
   
-  
-          users = User.find(:all, :include => [{:cpm_capacities => :project}], :conditions => ["projects.id = ?", p.id])
+          users = User.joins({:cpm_capacities => :project}).where("projects.id = ?", p.id)
           users.each do |u|
             
             result[i][:projects][j][:members][k] = {}
             result[i][:projects][j][:members][k][:name] = u.login
             result[i][:projects][j][:members][k][:capacities] = []
             l = 0
-            capacities = CpmUserCapacity.find(:all, :conditions => ["user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today])
+            capacities = CpmUserCapacity.where("user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today)
             capacities.each do |c|
               result[i][:projects][j][:members][k][:capacities][l] = {}
               result[i][:projects][j][:members][k][:capacities][l][:capacity] = c[:capacity]
@@ -74,16 +74,11 @@ module CPM
           if k != 0
             j = j + 1
           else
-            result[i][:projects].pop #[j] = nil
+            result[i][:projects].pop
           end
         end
   
-        # If there are no projects, remove project manager
-        #if j != 0
-          i = i + 1
-        #else 
-        #  result.pop #[i] = nil
-        #end
+        i = i + 1
       end
 
       result
@@ -97,7 +92,7 @@ module CPM
         users = data[:options][:users]
         users = User.find(users).sort_by{|u| u.login}
       else
-        users = User.allowed.sort_by{|u| u.login} #.collect{|u| u.id}
+        users = User.allowed.sort_by{|u| u.login} 
       end
   
       i = 0
@@ -107,7 +102,7 @@ module CPM
         result[i][:name] = u.login
         result[i][:project_managers] = {}
 
-        projects = Project.find(:all, :include => [{:capacities => :user}], :conditions => ["users.id = ?", u.id])
+        projects = Project.joins({:capacities => :user}).where("users.id = ?", u.id)
 
         projects.each do |p|
           project = {}
@@ -116,12 +111,13 @@ module CPM
           if Setting.plugin_redmine_cpm['plugin_cmi'].present? and p.cmi_project_info.present? and p.cmi_project_info.scheduled_finish_date.present?
             project[:end] = '('+p.cmi_project_info.scheduled_finish_date.strftime("%d/%m/%Y")+')' #p.created_on.strftime("%d/%m/%Y")
           else
-            project[:end] = '' #p.created_on.strftime("%d/%m/%Y")
+            project[:end] = ''
           end
           project[:capacities] = []
 
           l = 0
-          capacities = CpmUserCapacity.find(:all, :conditions => ["user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today])
+
+          capacities = CpmUserCapacity.where("user_id = ? AND project_id = ? AND to_date >= ?", u.id, p.id, Date.today)
           capacities.each do |c|
             project[:capacities][l] = {}
             project[:capacities][l][:capacity] = c[:capacity]
@@ -146,11 +142,7 @@ module CPM
           end
         end
 
-        #if result[i][:project_managers].present?
-          i = i + 1
-        #else
-        #  result.pop
-        #end
+        i = i + 1
       end
 
       result

@@ -1,4 +1,13 @@
 $(document).ready(function(){
+	// Override the tooltip widget to show html content in tooltips
+	$.widget("ui.tooltip", $.ui.tooltip, {
+	    options: {
+	        content: function () {
+	            return $(this).prop('title');
+	        }
+	    }
+	});
+
 	//add_filter('users');
 
 	$(document).tooltip({
@@ -279,6 +288,7 @@ function edit_capacities(id,from_date,to_date,projects){
 	//830
 	// When edit window is closed, enable remote submit (update only table) and submit form. After that, disable remote submit 
 	$('#dialog').dialog({width:1070, modal:true, close: function(){ 
+		$('#dialog').html("");
 		$('.ui-dialog').remove();
 		enable_remote_submit('find_capacities', '/cpm_management/planning');
 		$('#find_capacities').submit();

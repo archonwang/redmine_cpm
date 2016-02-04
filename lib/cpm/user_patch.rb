@@ -33,7 +33,7 @@ module CPM
       def get_by_role(role_id)
         allowed = Project.allowed.collect{|p| p.id}
         
-        User.find(:all, :include => [:members, {:members => :member_roles}], :conditions => ["members.project_id NOT IN ("+Project.not_allowed.join(',')+") AND member_roles.role_id = ? AND users.id NOT IN ("+not_allowed.join(',')+")", role_id]).uniq
+        User.joins(:members, {:members => :member_roles}).where("members.project_id NOT IN ("+Project.not_allowed.join(',')+") AND member_roles.role_id = ? AND users.id NOT IN ("+not_allowed.join(',')+")", role_id).uniq
       end
     end
 
