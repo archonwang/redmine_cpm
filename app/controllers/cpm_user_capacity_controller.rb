@@ -3,7 +3,6 @@ class CpmUserCapacityController < ApplicationController
 
   # Add new capacity to an user for a project
   def new
-    #data = params[:cpm_user_capacity]
 
   	@cpm_user_capacity = CpmUserCapacity.new(cpm_user_capacity_params)
 
@@ -24,9 +23,7 @@ class CpmUserCapacityController < ApplicationController
   # Edit a capacity for an user
   def edit
     cpm = CpmUserCapacity.find_by_id(params[:id])
-    #data = params[:cpm_user_capacity]
-    #data[:project_id] = data[:project_id].to_i
-    
+
     params[:cpm_user_capacity][:project_id] = params[:cpm_user_capacity][:project_id].to_i
 
     if cpm.update_attributes(cpm_user_capacity_params)
