@@ -11,7 +11,7 @@ module CPM
     end
 
     def self.groups(groups, users) #, ignore_blacklist)
-      User.includes(:groups).where("groups_users_join.group_id IN (?) AND users.id IN (?)", groups, users)
+      User.joins(:groups).where("groups_users.id IN (?) AND users.id IN (?)", groups, users).map(&:id)
     end
 
     def self.project_manager(ids, projects)
