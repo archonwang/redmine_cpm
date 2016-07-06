@@ -1,6 +1,102 @@
 module CPM
   class Filters
-    unloadable
+    include Redmine::I18n
+
+    DEFAULT_FILTERS = ['users','groups','projects','project_manager','time_unit','time_unit_num','ignore_black_lists']
+
+    # Array of filter names
+    def self.get_names
+      project_filters = Setting.plugin_redmine_cpm['project_filters'] || [0]
+      custom_field_filters = CustomField.where("id IN (?)",project_filters.map{|e| e.to_s}).collect{|cf| [cf.name,cf.id.to_s]}
+      
+      filters = [['','default']] + custom_field_filters + DEFAULT_FILTERS.collect{|f| [l(:"cpm.label_#{f}"),f]}
+
+      if Setting.plugin_redmine_cpm['plugin_knowledge_manager'].present?
+        filters << [l(:"cpm.label_knowledges"),'knowledges']
+      end
+
+      filters
+    end
+
+    # Return default active filters and custom active filters
+    def self.get_actives(filters)
+      available_filters = get_names
+      active_filters = []
+      active_custom_field_filters = []
+      available_filters.collect{|f| f[1]}.each do |filter|
+        if filters[filter].present?
+          active_filters << filter
+        elsif filters['custom_field'].present? and filters['custom_field'].include?(filter)
+          active_custom_field_filters << filter
+        end
+      end
+
+      # if there are no active filters, show users filter
+      if active_filters.empty? and active_custom_field_filters.empty?
+        active_filters << 'users'
+      end
+
+      [active_filters, active_custom_field_filters]
+    end
+
+    # Return projects fitlered
+    def self.get_projects(filters)
+      projects = []
+      # add projects specified by project filter
+      if filters[:projects].present?
+        projects = projects(filters[:projects])
+      else
+        projects = Project.allowed(filters['ignore_black_lists'].present?).collect{|p| p.id} #.sort_by{|p| p.name}
+      end
+
+      # add projects specified by project manager filter
+      if filters[:project_manager].present?
+        projects = project_manager(filters[:project_manager], projects)
+      end
+
+      # filter projects if custom field filters are specified
+      if filters[:custom_field].present?
+        projects = custom_field(filters[:custom_field], projects)
+      end
+
+      projects = Project.find(projects).map(&:self_and_descendants).flatten.uniq.sort_by(&:name)
+    end
+
+    # Return users filtered
+    def self.get_users(filters, projects = [])
+      users = []
+      # add users specified by users filter
+      if filters[:users].present?
+        users = users(filters[:users])
+      else
+        users = User.allowed(filters['ignore_black_lists'].present?).collect{|u| u.id}
+      end
+
+      # add users specified by groups filter
+      if filters[:groups].present?
+        users = groups(filters[:groups], users)
+      end
+      
+      # knowledge filter
+      if filters[:knowledges].present?
+        users = knowledges(filters[:knowledges], users)
+      end
+
+      # if there are NO users filters active, get users based on projects selected
+      if projects.present? and !filters[:users].present? and !filters[:groups].present? and !filters[:knowledges].present?
+        # get users who are project members
+        members = Member.select("user_id").where("project_id IN (?)", projects).map(&:user_id)
+        # get users who have time entries in projects
+        time_entries = TimeEntry.select("user_id").where("project_id IN (?)", projects).map(&:user_id)
+
+        users_not_allowed = User.not_allowed(filters['ignore_black_lists'].present?)
+        users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| users_not_allowed.include?((u.id).to_s)}.sort_by{|u| u.login}
+      end
+
+      User.find(users).sort_by(&:login)
+    end
+
+    # Specific filters
 
     def self.projects(projects)
     	projects

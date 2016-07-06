@@ -14,23 +14,10 @@
   # Main page for capacities search and management
   def show
     # get all filter names
-    @filters = CpmUserCapacity.get_filter_names
-    
-    # get all filters activated by params
-    @active_filters = []
-    @active_custom_field_filters = []
-    @filters.collect{|f| f[1]}.each do |filter|
-      if params[filter].present?
-        @active_filters << filter
-      elsif params['custom_field'].present? and params['custom_field'].include?(filter)
-        @active_custom_field_filters << filter
-      end
-    end
+    @filters = CPM::Filters.get_names
 
-    # if there are no active filters, show users filter
-    if @active_filters.empty? and @active_custom_field_filters.empty?
-      @active_filters << 'users'
-    end
+    # get all filters activated by params
+    @active_filters, @active_custom_field_filters = CPM::Filters.get_actives(params)
 
     # for each activated filter, load it
     @active_filters.each do |active_filter|
@@ -49,80 +36,19 @@
 
   # Capacity search result
   def planning
-    # if google calendar integration is activated, get google calendar info
-    if Setting.plugin_redmine_cpm[:google_calendar].present?
-      get_calendar
-    end
-
-    # users and projects to show in planning table
-    @users = []
-    @projects = []
-
     # getting @projects array
-    # add projects specified by project filter
-    if params[:projects].present?
-      @projects = CPM::Filters.projects(params[:projects])
-    else
-      @projects = Project.allowed(params['ignore_black_lists'].present?).collect{|p| p.id} #.sort_by{|p| p.name}
-    end
-
-    # add projects specified by project manager filter
-    if params[:project_manager].present?
-      @projects = CPM::Filters.project_manager(params[:project_manager], @projects)
-    end
-
-    # filter projects if custom field filters are specified
-    if params[:custom_field].present?
-      @projects = CPM::Filters.custom_field(params[:custom_field], @projects)
-    end
-
-
-    if !@projects.empty?
-      # getting @users array
-      # add users specified by users filter
-      if params[:users].present?
-        @users = CPM::Filters.projects(params[:users])
-      else
-        @users = User.allowed(params['ignore_black_lists'].present?).collect{|u| u.id}
-      end
-
-      # add users specified by groups filter
-      if params[:groups].present?
-        @users = CPM::Filters.groups(params[:groups], @users)
-      end
-      
-      # knowledge filter
-      if params[:knowledges].present?
-        @users = CPM::Filters.knowledges(params[:knowledges], @users)
-      end
-    end
-
-    # get projects objects
-    if @projects.present?
-      @projects = Project.where("id IN (?)",@projects).map(&:self_and_descendants).flatten.uniq.sort_by{|p| p.name}
-    else
-      @projects = []
-    end
-
-    # get users objects
-    # if there are NO users filters active, get users based on projects selected
-    if !params[:users].present? and !params[:groups].present? and !params[:knowledges].present?
-      # get users who are project members
-      members = Member.select("user_id").where("project_id IN (?)", @projects).collect(&:user_id)
-      # get users who have time entries in projects
-      time_entries = TimeEntry.select("user_id").where("project_id IN (?)", @projects).collect(&:user_id)
-
-      users_not_allowed = User.not_allowed(params['ignore_black_lists'].present?)
-      @users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| users_not_allowed.include?((u.id).to_s)}.sort_by{|u| u.login}
-    elsif @users.present?
-      @users = User.where("id IN (?)",@users).sort_by{|u| u.login}
-    else
-      @users = []
-    end
+    @projects = CPM::Filters.get_projects(params)
+    # getting @users array
+    @users = @projects.present? ? CPM::Filters.get_users(params, @projects) : []
 
     # set time_unit and time_unit_num default values
     @time_unit = params[:time_unit] || 'week'
     @time_unit_num = (params[:time_unit_num] || 12).to_i
+
+    # if google calendar integration is activated, get google calendar info
+    if Setting.plugin_redmine_cpm[:google_calendar].present?
+      @calendar = CPM::Calendar.get_calendar
+    end
 
     # if google calendar integration is activated, create new capacities for each entry
     if @calendar.present?
@@ -144,7 +70,6 @@
     @capacities = {}
     @users.each do |user|
       @capacities[user.id] = @time_unit_num.times.collect{|i| {'value' => 0.0, 'tooltip' => ""}}
-      
       # get all user capacities
       capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?) AND to_date >= ?',user.id, @projects.map{|p| p.id.to_s}, DateTime.now)
       capacities += holidays[user.id] if holidays.present?
@@ -340,37 +265,6 @@
     params = session[:params]
 
     redirect_to :action => 'show', :params => params
-  end
-
-  def get_calendar  
-    begin
-      calendar = {}
-
-      calendar_id = Setting.plugin_redmine_cpm[:calendar_id]
-
-      if calendar_id.present?
-        result = oauth_token.get('https://www.googleapis.com/calendar/v3/calendars/'+calendar_id+'/events?fields=items(summary,start,end)&maxResults=2500')
-
-        data = JSON.parse(result.body)
-
-        data['items'].each do |e|
-          pattern = /(.+) - / #/^([\w]+)/
-          matches = pattern.match(e['summary'])
-
-          if matches.present? and matches[1].present?
-            unless calendar[matches[1]].present?
-              calendar[matches[1]] = []
-            end
-
-            calendar[matches[1]] << [e['start']['dateTime'].to_date,e['end']['dateTime'].to_date-1.day]
-          end
-        end
-      end
-    rescue
-      calendar = {}
-    end
-
-    @calendar = calendar
   end
 
   def oauth_token
