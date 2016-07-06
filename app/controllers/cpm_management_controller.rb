@@ -146,7 +146,7 @@
       @capacities[user.id] = @time_unit_num.times.collect{|i| {'value' => 0.0, 'tooltip' => ""}}
       
       # get all user capacities
-      capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?)',user.id, @projects)
+      capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?) AND to_date >= ?',user.id, @projects.map{|p| p.id.to_s}, DateTime.now)
       capacities += holidays[user.id] if holidays.present?
 
       capacities.each do |capacity|
@@ -193,6 +193,7 @@
 
     @capacities = user.get_range_capacities(@from_date,@to_date,projects)
 
+    # show warning notice if user capacity is over 100
     @capacities.each do |c|
       if !c.check_capacity(Project.not_allowed(params['ignore_black_lists'].present?))
         flash[:warning] = l(:"cpm.msg_capacity_higher_than_100")

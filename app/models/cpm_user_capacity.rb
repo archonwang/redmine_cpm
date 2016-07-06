@@ -22,16 +22,16 @@ class CpmUserCapacity < ActiveRecord::Base
     end
   end
 
-  # send a notice if user's total capacity on a day is higher than 100
+  # check if user's total capacity on a day is higher than 100
   def check_capacity(ignored_projects = [0])
     result = true
 
     user = User.find_by_id(self.user_id)
-    days = (Date.parse(self.to_date.to_s) - Date.parse(self.from_date.to_s)).to_i
+    initial_day = [Date.parse(self.from_date.to_s), DateTime.now].max
+    days = (Date.parse(self.to_date.to_s) - initial_day).to_i
 
     (0..days).each do |i|
-      date = self.from_date + i.day
-
+      date = initial_day + i.day
       if get_total_capacity(self.user_id, date, ignored_projects) > 100    
         result = false
       end
