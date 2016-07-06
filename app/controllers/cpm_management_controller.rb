@@ -99,7 +99,7 @@
 
     # get projects objects
     if @projects.present?
-      @projects = Project.where("id IN (?)",@projects).sort_by{|p| p.name}
+      @projects = Project.where("id IN (?)",@projects).map(&:self_and_descendants).flatten.uniq.sort_by{|p| p.name}
     else
       @projects = []
     end
