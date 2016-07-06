@@ -10,7 +10,8 @@ es:
   permission_cpm_management: "Ver menú de gestión de capacidades"
 
   cpm:
-    title_black_lists: "Listas negras"
+    title_black_lists: "Elementos ignorados"
+    label_ignore_unselected: "Ignorar no seleccionados"
     label_ignored_users: "Usuarios ignorados"
     label_ignored_projects: "Proyectos ignorados"
     label_ignored_groups: "Grupos ignorados"

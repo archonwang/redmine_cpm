@@ -20,7 +20,11 @@ module CPM
         if ignore_blacklist
           [0]
         else
-          Setting.plugin_redmine_cpm['ignored_projects'] || [0]
+          if Setting.plugin_redmine_cpm['ignore_unselected_projects']
+            Project.active.map(&:id) - Setting.plugin_redmine_cpm['ignored_projects'].map(&:to_i) || [0]
+          else
+            Setting.plugin_redmine_cpm['ignored_projects'] || [0]
+          end
         end
       end
 

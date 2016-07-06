@@ -21,7 +21,11 @@ module CPM
         if ignore_blacklist
           [0]
         else
-          Setting.plugin_redmine_cpm['ignored_users'] || [0]
+          if Setting.plugin_redmine_cpm['ignore_unselected_users']
+            User.all.map(&:id) - Setting.plugin_redmine_cpm['ignored_users'].map(&:to_i) || [0]
+          else
+            Setting.plugin_redmine_cpm['ignored_users'] || [0]
+          end
         end
       end
 
@@ -43,8 +47,7 @@ module CPM
         if projects_id.present?
           query = "from_date <= ? AND to_date >= ? AND project_id IN ("+projects_id.join(',')+")"
         else
-          ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
-          query = "from_date <= ? AND to_date >= ? AND project_id NOT IN ("+ignored_projects.join(',')+")"
+          query = "from_date <= ? AND to_date >= ? AND project_id NOT IN ("+Project.not_allowed.join(',')+")"
         end
 
         self.cpm_capacities.where(query, due_date+1, start_date)

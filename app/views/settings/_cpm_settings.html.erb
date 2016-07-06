@@ -7,20 +7,34 @@
 	        options_from_collection_for_select(User.all.sort_by{|u| u.login}, :id, :login, (@settings['ignored_users'] || [])),
 	        :multiple => true,
 	        :size => 10 %>
+		    <p>
+		    <%= check_box_tag 'settings[ignore_unselected_users]', true, @settings['ignore_unselected_users'].present? %>
+		    <%=l(:"cpm.label_ignore_unselected")%>
+			</p>
 		</p>
+
 		<p>
 	    <label><%=l(:"cpm.label_ignored_groups")%></label>
 	    <%= select_tag 'settings[ignored_groups]',
 	        options_from_collection_for_select(Group.all.sort_by{|g| g.name}, :id, :name, (@settings['ignored_groups'] || [])),
 	        :multiple => true,
 	        :size => 10 %>
+	       	<p>
+		    <%= check_box_tag 'settings[ignore_unselected_groups]', true, @settings['ignore_unselected_groups'].present? %>
+		    <%=l(:"cpm.label_ignore_unselected")%>
+			</p>
 		</p>
+
 		<p>
 	    <label><%=l(:"cpm.label_ignored_projects")%></label>
 	    <%= select_tag 'settings[ignored_projects]',
 	        options_from_collection_for_select(Project.all.sort_by{|p| p.name}, :id, :name, (@settings['ignored_projects'] || [])),
 	        :multiple => true,
 	        :size => 10 %>
+	        <p>
+		    <%= check_box_tag 'settings[ignore_unselected_projects]', true, @settings['ignore_unselected_projects'].present? %>
+			<%=l(:"cpm.label_ignore_unselected")%>
+			</p>
 		</p>
 	</fieldset>
 </div>

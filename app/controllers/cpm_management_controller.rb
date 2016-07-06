@@ -221,17 +221,12 @@
   end
 
   def get_filter_groups
-    ignored_groups = Setting.plugin_redmine_cpm['ignored_groups'] || [0]
-    if params['show_all_groups'].present?
-      ignored_groups = [0]
-    end
-
     @groups_selected = []
     if params['groups'].present?
       @groups_selected = params['groups']
     end
 
-    @groups_options = Group.where("id NOT IN (?)", ignored_groups).sort_by{|g| g.name}.collect{|g| [g.name, (g.id).to_s]}
+    @groups_options = Group.allowed(params['show_all_groups']).sort_by{|g| g.name}.collect{|g| [g.name, (g.id).to_s]}
     
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_management/filters/groups', :layout => false, :locals => { :options => @groups_options }) }
