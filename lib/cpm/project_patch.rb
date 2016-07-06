@@ -25,7 +25,7 @@ module CPM
       end
 
       def allowed(ignore_blacklist = false)
-        where("id NOT IN (?)", not_allowed(ignore_blacklist))
+        active.where("id NOT IN (?)", not_allowed(ignore_blacklist))
       end
     end
 
