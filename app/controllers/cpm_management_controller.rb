@@ -68,10 +68,12 @@
 
     # create object for result table info
     @capacities = {}
+    all_start_day = CPM::CpmDate.get_start_date(@time_unit, 1)
+    all_end_day = CPM::CpmDate.get_due_date(@time_unit, @time_unit_num)
     @users.each do |user|
       @capacities[user.id] = @time_unit_num.times.collect{|i| {'value' => 0.0, 'tooltip' => ""}}
       # get all user capacities
-      capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?) AND to_date >= ?',user.id, @projects.map{|p| p.id.to_s}, DateTime.now)
+      capacities = CpmUserCapacity.where('user_id = ? AND project_id IN(?) AND from_date <= ? AND to_date >= ?',user.id, @projects.map{|p| p.id.to_s}, all_end_day, all_start_day)
       capacities += holidays[user.id] if holidays.present?
 
       capacities.each do |capacity|
