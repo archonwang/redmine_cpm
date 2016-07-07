@@ -85,12 +85,11 @@ module CPM
       # if there are NO users filters active, get users based on projects selected
       if projects.present? and !filters[:users].present? and !filters[:groups].present? and !filters[:knowledges].present?
         # get users who are project members
-        members = Member.select("user_id").where("project_id IN (?)", projects).map(&:user_id)
+        members = User.allowed(filters['ignore_black_lists'].present?).joins(:members).where("members.project_id IN (?)", projects)
         # get users who have time entries in projects
-        time_entries = TimeEntry.select("user_id").where("project_id IN (?)", projects).map(&:user_id)
+        time_entries = User.allowed(filters['ignore_black_lists'].present?).joins('LEFT JOIN time_entries ON time_entries.user_id = users.id').where("time_entries.project_id IN (?)", projects)
 
-        users_not_allowed = User.not_allowed(filters['ignore_black_lists'].present?)
-        users = User.where("id IN (?)", (members+time_entries).uniq).reject{|u| users_not_allowed.include?((u.id).to_s)}.sort_by{|u| u.login}
+        users = (members + time_entries).uniq.map(&:id)
       end
 
       User.find(users).sort_by(&:login)
