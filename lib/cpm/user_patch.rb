@@ -21,19 +21,23 @@ module CPM
         if ignore_blacklist
           [0]
         else
-          Setting.plugin_redmine_cpm['ignored_users'] || [0]
+          if Setting.plugin_redmine_cpm['ignore_unselected_users']
+            User.all.map(&:id) - Setting.plugin_redmine_cpm['ignored_users'].map(&:to_i) || [0]
+          else
+            Setting.plugin_redmine_cpm['ignored_users'] || [0]
+          end
         end
       end
 
       def allowed(ignore_blacklist = false)
-        where("id NOT IN (?)", not_allowed(ignore_blacklist))
+        active.where("users.id NOT IN (?)", not_allowed(ignore_blacklist))
       end
 
       # Get users who has the specified role in almost any project
       def get_by_role(role_id)
         allowed = Project.allowed.collect{|p| p.id}
         
-        User.find(:all, :include => [:members, {:members => :member_roles}], :conditions => ["members.project_id NOT IN ("+Project.not_allowed.join(',')+") AND member_roles.role_id = ? AND users.id NOT IN ("+not_allowed.join(',')+")", role_id]).uniq
+        User.joins(:members, {:members => :member_roles}).where("members.project_id NOT IN ("+Project.not_allowed.join(',')+") AND member_roles.role_id = ? AND users.id NOT IN ("+not_allowed.join(',')+")", role_id).uniq
       end
     end
 
@@ -43,8 +47,7 @@ module CPM
         if projects_id.present?
           query = "from_date <= ? AND to_date >= ? AND project_id IN ("+projects_id.join(',')+")"
         else
-          ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
-          query = "from_date <= ? AND to_date >= ? AND project_id NOT IN ("+ignored_projects.join(',')+")"
+          query = "from_date <= ? AND to_date >= ? AND project_id NOT IN ("+Project.not_allowed.join(',')+")"
         end
 
         self.cpm_capacities.where(query, due_date+1, start_date)

@@ -1,5 +1,6 @@
 require 'cpm/user_patch'
 require 'cpm/project_patch'
+require 'cpm/group_patch'
 require 'cpm/hooks'
 require 'cpm/cpm_menu_helper_patch'
 

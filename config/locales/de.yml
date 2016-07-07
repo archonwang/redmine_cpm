@@ -11,6 +11,7 @@ de:
 
   cpm:
     title_black_lists: "Blacklist"
+    label_ignore_unselected: "Ignore unselected"
     label_ignored_users: "Ignorierte Benutzer"
     label_ignored_projects: "Ignorierte Projekte"
     label_ignored_groups: "Ignorierte Gruppen"
