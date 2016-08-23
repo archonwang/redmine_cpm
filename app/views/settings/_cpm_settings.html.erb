@@ -37,6 +37,13 @@
 			</p>
 		</p>
 	</fieldset>
+	<fieldset>
+		<legend><%=l(:label_project_plural)%></legend>
+		<p>
+		    <%= check_box_tag 'settings[add_subprojects]', true, @settings['add_subprojects'].present? %>
+			<%=l(:"cpm.label_add_subprojects")%>
+		</p>
+	</fieldset>
 </div>
 <div class="splitcontentright">
 	<fieldset>

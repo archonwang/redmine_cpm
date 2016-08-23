@@ -93,6 +93,8 @@ es:
     label_knowledges: Conocimientos
     label_show_all: Ver todos
 
+    label_add_subprojects: Añadir subproyectos
+
     unknown: "Desconocido"
     months:
       January: "Enero"

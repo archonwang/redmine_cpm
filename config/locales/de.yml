@@ -92,6 +92,8 @@ de:
     label_knowledges: Knowledges
     label_show_all: Show all
 
+    label_add_subprojects: Add subprojects
+
     unknown: "Unbekannt"
     months:
       January: "Januar"
