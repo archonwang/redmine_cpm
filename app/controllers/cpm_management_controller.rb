@@ -1,5 +1,5 @@
 ﻿class CpmManagementController < ApplicationController
-  unloadable
+  
 
   before_filter :authorize_global, :only => [:show]
   before_filter :set_menu_item

@@ -1,6 +1,6 @@
 module CPM
   class CpmDate
-    unloadable
+    
 
     def self.get_start_date(time_unit,index)
       case time_unit

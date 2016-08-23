@@ -1,7 +1,7 @@
 require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
 
 module CPM
-  unloadable
+  
   module ProjectPatch
     def self.included(base) # :nodoc:
       base.extend(ClassMethods)
@@ -9,7 +9,7 @@ module CPM
 
       # Same as typing in the class
       base.class_eval do
-        unloadable # Send unloadable so it will be reloaded in development
+        
 
         has_many :capacities, :class_name => 'CpmUserCapacity', :dependent => :destroy
       end

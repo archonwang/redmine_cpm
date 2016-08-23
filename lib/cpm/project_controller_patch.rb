@@ -9,7 +9,7 @@ module CPM
 
       # Same as typing in the class
       base.class_eval do
-        unloadable # Send unloadable so it will be reloaded in development
+        
         alias_method_chain :settings, :cpm
       end
     end

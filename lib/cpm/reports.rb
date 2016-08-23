@@ -1,6 +1,6 @@
 module CPM
   class Reports
-    unloadable
+    
 
     def self.get_report(type, data)
       case type
