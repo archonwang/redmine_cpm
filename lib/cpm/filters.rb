@@ -31,9 +31,13 @@ module CPM
         end
       end
 
-      # if there are no active filters, show users filter
+      # if there are no active filters, show default filters
       if active_filters.empty? and active_custom_field_filters.empty?
-        active_filters << 'users'
+        if Setting.plugin_redmine_cpm['default_active_filters']
+          active_filters = Setting.plugin_redmine_cpm['default_active_filters']
+        else
+          active_filters << 'users'
+        end
       end
 
       [active_filters, active_custom_field_filters]
