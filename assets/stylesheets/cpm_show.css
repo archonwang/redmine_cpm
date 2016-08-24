@@ -1,4 +1,8 @@
 /* Filters */
+.enable_filter, .filter_name{
+	vertical-align: top;
+}
+
 .filter_name{
 	display:inline-table;
 	width:140px;
