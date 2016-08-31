@@ -53,8 +53,6 @@ es:
     label_due_date: "Fin"
     label_show_banned: "Muestra opciones ocultas"
     label_report_type: "Tipo de informe"
-    label_select_users: "Selecciona los usuarios"
-    label_select_project_managers: "Selecciona los jefes de proyecto"
     button_assign: "Asignar"
 
     label_hide_empty_users: "Ocultar usuarios vacios"

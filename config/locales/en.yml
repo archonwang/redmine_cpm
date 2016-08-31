@@ -53,8 +53,6 @@ en:
     label_due_date: "Due date"
     label_show_banned: "Show banned options"
     label_report_type: "Report type"
-    label_select_users: "Select users"
-    label_select_project_managers: "Select project managers"
     button_assign: "Assign"
 
     label_hide_empty_users: "Hide empty users"

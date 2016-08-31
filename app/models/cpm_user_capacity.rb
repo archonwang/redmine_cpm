@@ -11,6 +11,8 @@ class CpmUserCapacity < ActiveRecord::Base
   						:format => {:with => /\A\d{4}-\d{2}-\d{2}/, :message => " tiene que ser una fecha válida" }
   validate :to_date_after_from_date
 
+  scope :current, -> { where("to_date >= ?", Date.today) }
+
   before_save do 
     self.editor_id = User.current.id
   end

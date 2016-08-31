@@ -52,8 +52,6 @@ de:
     label_start_date: "Startdatum"
     label_due_date: "Enddatum"
     label_report_type: "Report type"
-    label_select_users: "Select users"
-    label_select_project_managers: "Select project managers"
     button_assign: "Zuweisen"
 
     label_hide_empty_users: "Verstecke leere Benutzer"
