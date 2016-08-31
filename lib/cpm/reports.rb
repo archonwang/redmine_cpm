@@ -28,7 +28,7 @@ module CPM
       users.each do |user|
         result[:data][user.login] = {}
 
-        if user.cpm_capacities.current.present?
+        if user.cpm_capacities.current.allowed.present?
           user_capacities = user.cpm_capacities.current.map{|c| c.slice(:project_id, :capacity, :from_date, :to_date)}.group_by{|c| Project.find(c["project_id"]).name}
 
           result[:data][user.login] = user_capacities if user_capacities.present?  
@@ -53,7 +53,7 @@ module CPM
       projects.each do |project|
         result[:data][project.name] = {}
 
-        if project.capacities.current.present?
+        if project.capacities.current.allowed.present?
           project_capacities = project.capacities.current.map{|c| c.slice(:user_id, :capacity, :from_date, :to_date)}.group_by{|c| User.find(c["user_id"]).login}
 
           result[:data][project.name] = project_capacities if project_capacities.present?  

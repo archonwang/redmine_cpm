@@ -33,7 +33,7 @@ class CpmReportsController < ApplicationController
       @users_selected = params['users']
     end
 
-    @users_options = User.allowed(params['show_all_users']).sort_by{|u| u.login}.collect{|u| [u.login, (u.id).to_s]}
+    @users_options = User.allowed.sort_by{|u| u.login}.collect{|u| [u.login, (u.id).to_s]}
 
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_reports/filters/users', :layout => false) }
@@ -46,7 +46,7 @@ class CpmReportsController < ApplicationController
       @projects_selected = params['projects']
     end
 
-    @projects_options = Project.allowed(params['show_all_projects']).sort_by{|p| p.name}.collect{|p| [p.name, (p.id).to_s]}
+    @projects_options = Project.allowed.sort_by{|p| p.name}.collect{|p| [p.name, (p.id).to_s]}
 
     if request.xhr?
       render :json => { :filter => render_to_string(:partial => 'cpm_reports/filters/projects', :layout => false) }

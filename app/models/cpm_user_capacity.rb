@@ -12,6 +12,7 @@ class CpmUserCapacity < ActiveRecord::Base
   validate :to_date_after_from_date
 
   scope :current, -> { where("to_date >= ?", Date.today) }
+  scope :allowed, -> { where("user_id NOT IN (?) AND project_id NOT IN(?)", User.not_allowed, Project.not_allowed) }
 
   before_save do 
     self.editor_id = User.current.id
