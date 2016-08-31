@@ -19,20 +19,13 @@ module CPM
         :data => {}
       }
 
-      if selected_users.present?
-        users = User.find(selected_users).sort_by(&:login)
-      else
-        users = User.allowed.sort_by(&:login)
-      end
+      users = selected_users.present? ? 
+        User.find(selected_users).sort_by(&:login) : 
+        User.allowed.sort_by(&:login)
 
       users.each do |user|
-        result[:data][user.login] = {}
-
-        if user.cpm_capacities.current.allowed.present?
-          user_capacities = user.cpm_capacities.current.map{|c| c.slice(:project_id, :capacity, :from_date, :to_date)}.group_by{|c| Project.find(c["project_id"]).name}
-
-          result[:data][user.login] = user_capacities if user_capacities.present?  
-        end
+        user_capacities = user.cpm_capacities.current.allowed.map{|c| c.slice(:project_id, :capacity, :from_date, :to_date)}.group_by{|c| Project.find(c["project_id"]).name}
+        result[:data][user.login] = user_capacities.present? ? user_capacities : {}
       end
 
       result
@@ -44,20 +37,13 @@ module CPM
         :data => {}
       }
 
-      if selected_projects.present?
-        projects = Project.find(selected_projects).sort_by(&:name)
-      else
-        projects = Project.allowed.sort_by(&:name)
-      end
+      projects = selected_projects.present? ? 
+        Project.find(selected_projects).sort_by(&:name) : 
+        Project.allowed.sort_by(&:name)
 
       projects.each do |project|
-        result[:data][project.name] = {}
-
-        if project.capacities.current.allowed.present?
-          project_capacities = project.capacities.current.map{|c| c.slice(:user_id, :capacity, :from_date, :to_date)}.group_by{|c| User.find(c["user_id"]).login}
-
-          result[:data][project.name] = project_capacities if project_capacities.present?  
-        end
+        project_capacities = project.capacities.current.allowed.map{|c| c.slice(:user_id, :capacity, :from_date, :to_date)}.group_by{|c| User.find(c["user_id"]).login}
+        result[:data][project.name] = project_capacities.present? ? project_capacities : {}   
       end
 
       result
