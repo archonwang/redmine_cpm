@@ -149,8 +149,8 @@ function hide_empty_results(){
 		if (i>0){
 			empty = true;
 		
-			$.each($('td',row),function(j,col){
-				if (j>0 && $(col).attr('value')!=0){
+			$.each($('td.edit_user_capacities',row),function(j,col){
+				if ($(col).attr('value')!=0){
 					empty = false;
 				}
 			});
@@ -171,16 +171,16 @@ function show_all_results(){
 
 // Añade alternativamente las clases odd y even a las filas de la tabla indicada
 function strip_table(table_id){
-	nxt = 'even';
+	nxt = 'odd';
 	$('#'+table_id+' tbody tr').each(function(i,tr){
 		if ($(tr).is(':visible')){
-			$(this).removeClass('even').removeClass('odd');
+			$(this).removeClass('odd').removeClass('even');
 			$(this).addClass(nxt);
 
-			if (nxt=='odd'){
-				nxt = 'even';
-			} else {
+			if (nxt=='even'){
 				nxt = 'odd';
+			} else {
+				nxt = 'even';
 			}
 		}
 	});
@@ -266,7 +266,7 @@ function clear_disabled_filters(){
 }
 
 // Generate and show modal window for user capacity edition
-function edit_capacities(id,from_date,to_date,projects){
+function edit_capacities(id,name,from_date,to_date,projects){
 	html = "";
 	if ($('input[name="ignore_black_lists"]').is(':checked')){
 		ignore_blacklists_value = 'on';
@@ -285,6 +285,7 @@ function edit_capacities(id,from_date,to_date,projects){
 	});
 
 	$('#dialog').html(html);
+	$('#dialog').prop('title',name);
 	//830
 	// When edit window is closed, enable remote submit (update only table) and submit form. After that, disable remote submit 
 	$('#dialog').dialog({width:1070, modal:true, close: function(){ 

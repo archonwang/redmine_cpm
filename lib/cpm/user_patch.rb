@@ -1,7 +1,7 @@
 require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
 
 module CPM
-  unloadable
+  
   module UserPatch
     def self.included(base) # :nodoc:
       base.extend(ClassMethods)
@@ -9,7 +9,7 @@ module CPM
 
       # Same as typing in the class
       base.class_eval do
-        unloadable # Send unloadable so it will be reloaded in development
+        
 
         has_many :cpm_capacities, :class_name => 'CpmUserCapacity', :dependent => :destroy
         has_many :cpm_editions, :class_name => 'CpmUserCapacity', :foreign_key => 'editor_id'
@@ -21,12 +21,20 @@ module CPM
         if ignore_blacklist
           [0]
         else
-          Setting.plugin_redmine_cpm['ignored_users'] || [0]
+          if Setting.plugin_redmine_cpm['ignore_unselected_users']
+            User.all.map(&:id) - Setting.plugin_redmine_cpm['ignored_users'].map(&:to_i) || [0]
+          else
+            Setting.plugin_redmine_cpm['ignored_users'] || [0]
+          end
         end
       end
 
-      def allowed(ignore_blacklist = false)
-        where("id NOT IN (?)", not_allowed(ignore_blacklist))
+      def allowed(ignore_blacklist = false, user_list = [])
+        if user_list.present?
+          active.where("users.id IN (?) AND users.id NOT IN (?)", user_list, not_allowed(ignore_blacklist))
+        else
+          active.where("users.id NOT IN (?)", not_allowed(ignore_blacklist))
+        end
       end
 
       # Get users who has the specified role in almost any project
@@ -43,8 +51,7 @@ module CPM
         if projects_id.present?
           query = "from_date <= ? AND to_date >= ? AND project_id IN ("+projects_id.join(',')+")"
         else
-          ignored_projects = Setting.plugin_redmine_cpm['ignored_projects'] || [0]
-          query = "from_date <= ? AND to_date >= ? AND project_id NOT IN ("+ignored_projects.join(',')+")"
+          query = "from_date <= ? AND to_date >= ? AND project_id NOT IN ("+Project.not_allowed.join(',')+")"
         end
 
         self.cpm_capacities.where(query, due_date+1, start_date)

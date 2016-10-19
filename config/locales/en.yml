@@ -11,6 +11,7 @@ en:
 
   cpm:
     title_black_lists: "Blacklist"
+    label_ignore_unselected: "Ignore unselected"
     label_ignored_users: "Ingored users"
     label_ignored_projects: "Ignored projects"
     label_ignored_groups: "Ignored groups"
@@ -52,8 +53,6 @@ en:
     label_due_date: "Due date"
     label_show_banned: "Show banned options"
     label_report_type: "Report type"
-    label_select_users: "Select users"
-    label_select_project_managers: "Select project managers"
     button_assign: "Assign"
 
     label_hide_empty_users: "Hide empty users"
@@ -91,6 +90,9 @@ en:
     label_show_knowledges: Show knowledges
     label_knowledges: Knowledges
     label_show_all: Show all
+
+    label_add_subprojects: Add subprojects
+    label_default_active_filters: Default active filters
 
     unknown: "Unknown"
     months:

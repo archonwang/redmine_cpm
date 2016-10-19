@@ -1,5 +1,5 @@
 class CpmUserCapacityController < ApplicationController
-  unloadable
+  
 
   # Add new capacity to an user for a project
   def new

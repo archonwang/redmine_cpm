@@ -1,7 +1,7 @@
 require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
 
 module CPM
-  unloadable
+  
   module ProjectPatch
     def self.included(base) # :nodoc:
       base.extend(ClassMethods)
@@ -9,7 +9,7 @@ module CPM
 
       # Same as typing in the class
       base.class_eval do
-        unloadable # Send unloadable so it will be reloaded in development
+        
 
         has_many :capacities, :class_name => 'CpmUserCapacity', :dependent => :destroy
       end
@@ -20,12 +20,20 @@ module CPM
         if ignore_blacklist
           [0]
         else
-          Setting.plugin_redmine_cpm['ignored_projects'] || [0]
+          if Setting.plugin_redmine_cpm['ignore_unselected_projects']
+            Project.active.map(&:id) - Setting.plugin_redmine_cpm['ignored_projects'].map(&:to_i) || [0]
+          else
+            Setting.plugin_redmine_cpm['ignored_projects'] || [0]
+          end
         end
       end
 
-      def allowed(ignore_blacklist = false)
-        where("id NOT IN (?)", not_allowed(ignore_blacklist))
+      def allowed(ignore_blacklist = false, project_list = [])
+        if project_list.present?
+          active.where("id IN (?) AND id NOT IN (?)", project_list, not_allowed(ignore_blacklist))
+        else
+          active.where("id NOT IN (?)", not_allowed(ignore_blacklist))
+        end
       end
     end
 

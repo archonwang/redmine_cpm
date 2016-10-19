@@ -10,7 +10,8 @@ es:
   permission_cpm_management: "Ver menú de gestión de capacidades"
 
   cpm:
-    title_black_lists: "Listas negras"
+    title_black_lists: "Elementos ignorados"
+    label_ignore_unselected: "Ignorar no seleccionados"
     label_ignored_users: "Usuarios ignorados"
     label_ignored_projects: "Proyectos ignorados"
     label_ignored_groups: "Grupos ignorados"
@@ -52,8 +53,6 @@ es:
     label_due_date: "Fin"
     label_show_banned: "Muestra opciones ocultas"
     label_report_type: "Tipo de informe"
-    label_select_users: "Selecciona los usuarios"
-    label_select_project_managers: "Selecciona los jefes de proyecto"
     button_assign: "Asignar"
 
     label_hide_empty_users: "Ocultar usuarios vacios"
@@ -81,7 +80,7 @@ es:
     label_month_n: "Mes %{n}"
 
     msg_projects_not_found: "No se ha encontrado ningún proyecto con los requisitos especificados. Se mostrarán los resultados para todos los proyectos."
-    msg_capacity_higher_than_100: "La capacidad del usuario a superado el 100%"
+    msg_capacity_higher_than_100: "La capacidad del usuario ha superado el 100%"
     msg_save_success: "Se ha guardado con exito"
     msg_edit_success: "Se ha modificado con exito"
     msg_delete_success: "Se ha eliminado con exito"
@@ -91,6 +90,9 @@ es:
     label_show_knowledges: Mostrar conocimientos
     label_knowledges: Conocimientos
     label_show_all: Ver todos
+
+    label_add_subprojects: Añadir subproyectos
+    label_default_active_filters: Filtros activos por defecto
 
     unknown: "Desconocido"
     months:
